@@ -1,0 +1,8 @@
+{
+  "token": "123456789:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  "proxy": {
+    "enable": true,
+    "proxy_url": "http://127.0.0.1:9999"
+  },
+  "message_bot_stopped": "Bot stopped."
+}
