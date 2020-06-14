@@ -39,15 +39,18 @@ class Bot(User):
 
         self.tasks = []
 
-    def get_updates(self, offset: int, timeout: int = 60) -> list:
-        post_data = {'offset': offset,
-                     'timeout': timeout}
-        update_resp: dict = requests.post(self.base_url + 'getUpdates', data=post_data, **self.proxy_kw).json()
+    def api(self, action: str, data: dict):
+        resp = requests.post(self.base_url + action, data=data, **self.proxy_kw).json()
+        if not resp['ok']:
+            raise ConnectionError(f'API request "{action}" failed. {resp["description"]}')
 
-        if not update_resp['ok']:
-            raise UpdateError('Update getting failed.' + update_resp['description'])
+        return resp['result']
 
-        return update_resp['result']
+    def get_updates(self, offset: int = 0, timeout: int = 60) -> list:
+        update_data = {'offset': offset,
+                       'timeout': timeout}
+
+        return self.api('getUpdates', update_data)
 
     def add_task(self, criteria, action, **action_kw):
         """
