@@ -55,13 +55,13 @@ class Bot(User):
     def add_task(self, criteria, action, **action_kw):
         """
         :param criteria:
-            A function that lead flow of program into "action" function. It should take a Message object as the only
-            argument and returns a bool. When it returns True, "action" will be executed. An example is to return
+            A function that lead flow of program into "action" function. It should take a Message-like object as the
+            only argument and returns a bool. When it returns True, "action" will be executed. An example is to return
             True if the message starts with "/start", which is the standard starting of private chats with users.
         :param action:
             A function to be executed when criteria returns True. Typically it's the response on users' actions.
-            It should take a Message object as the only positional argument and accept keyword arguments. Arguments in
-            action_kw will be passed to it.
+            It should take a Message-like object as the only positional argument and accept keyword arguments. Arguments
+            in action_kw will be passed to it.
         :param action_kw:
             Keyword arguments that will be passed to action when it is called.
         :return:
@@ -184,6 +184,9 @@ class Message:
             self.dice_value = msg_json['dice']['value']
         else:
             self.dice = False
+
+    def __str__(self):
+        return self.raw
 
 
 class Chat:
