@@ -85,8 +85,8 @@ class Bot(User):
                     if criteria(msg):
                         action(msg, **action_kw)
 
-    def send_message(self, msg):
-        pass
+    def send_message(self, **kw):
+        return self.api('sendMessage', kw)
 
 
 class Message:
