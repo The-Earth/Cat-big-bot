@@ -79,7 +79,7 @@ class Bot(User):
                     continue
 
                 for criteria, action, action_kw in self.tasks:
-                    if criteria(Message):
+                    if criteria(msg):
                         action(msg, **action_kw)
 
     def send_message(self, msg):
