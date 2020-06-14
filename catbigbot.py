@@ -81,11 +81,104 @@ class Bot(User):
                     if criteria(Message):
                         action(msg, **action_kw)
 
+    def send_message(self, msg):
+        pass
+
 
 class Message:
     def __init__(self, msg_json: dict):
         self.chat = Chat(msg_json['chat'])
-        self.id = msg_json['message_id']
+        self.id: int = msg_json['message_id']
+        self.from_ = User(msg_json['from'])
+        self.date: int = msg_json['date']
+
+        if 'forward_from' in msg_json.keys():
+            # forwarded from users who allowed a link to their account in forwarded message
+            self.forward_from = User(msg_json['forward_from'])
+            self.forward = True
+        elif 'forward_sender_name' in msg_json.keys():
+            # forwarded from users who disallowed a link to their account in forwarded message
+            self.forward_sender_name: str = msg_json['forward_sender_name']
+            self.forward = True
+        elif 'forward_from_chat' in msg_json.keys():
+            # forwarded from channels
+            self.forward_from_chat = Chat(msg_json['forward_from_chat'])
+            self.forward_from_message_id: int = msg_json['forward_from_message_id']
+            self.forward_signature: str = msg_json['forward_signature']
+            self.forward = True
+        else:
+            self.forward = False
+
+        if self.forward:
+            self.forward_date: int = msg_json['forward_date']
+
+        if 'reply_to_message' in msg_json.keys():
+            self.reply_to_message = Message(msg_json['reply_to_message'])
+            self.reply = True
+        else:
+            self.reply = False
+
+        if 'edit_date' in msg_json.keys():
+            self.edit_date: int = msg_json['edit_date']
+            self.edit = True
+        else:
+            self.edit = False
+
+        if 'text' in msg_json.keys():
+            self.text: str = msg_json['text']
+        elif 'caption' in msg_json.keys():
+            self.text: str = msg_json['caption']
+        else:
+            self.text: str = ''
+
+        self.mentions = []
+        self.hashtags = []
+        self.cashtags = []
+        self.commands = []
+        self.links = []
+        self.bolds = []
+        self.italics = []
+        self.underlines = []
+        self.strikethroughs = []
+        self.codes = []
+        self.text_links = []
+        self.text_mention = []
+        if 'entities' in msg_json.keys() or 'caption_entities' in msg_json.keys():
+            entity_type = 'entities' if 'entities' in msg_json.keys() else 'caption_entities'
+            for item in msg_json[entity_type]:
+                offset = item['offset']
+                length = item['length']
+                if item['type'] == 'mention':
+                    self.mentions.append(self.text[offset:offset + length])
+                elif item['type'] == 'hashtag':
+                    self.hashtags.append(self.text[offset:offset + length])
+                elif item['type'] == 'cashtag':
+                    self.cashtags.append(self.text[offset:offset + length])
+                elif item['type'] == 'bot_command':
+                    self.commands.append(self.text[offset:offset + length])
+                elif item['type'] == 'url':
+                    self.links.append(self.text[offset:offset + length])
+                elif item['type'] == 'bold':
+                    self.bolds.append(self.text[offset:offset + length])
+                elif item['type'] == 'italic':
+                    self.italics.append(self.text[offset:offset + length])
+                elif item['type'] == 'underline':
+                    self.underlines.append(self.text[offset:offset + length])
+                elif item['type'] == 'strikethrough':
+                    self.strikethroughs.append(self.text[offset:offset + length])
+                elif item['type'] == 'code':
+                    self.codes.append(self.text[offset:offset + length])
+                elif item['type'] == 'text_link':
+                    self.text_links.append((self.text[offset:offset + length], item['url']))
+                elif item['type'] == 'text_mention':
+                    self.text_mention.append((self.text[offset:offset + length], User(item['user'])))
+
+        if 'dice' in msg_json.keys():
+            self.dice = True
+            self.dice_emoji = msg_json['dice']['emoji']
+            self.dice_value = msg_json['dice']['value']
+        else:
+            self.dice = False
 
 
 class Chat:
