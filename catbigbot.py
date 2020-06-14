@@ -3,6 +3,7 @@ import requests
 
 class User:
     def __init__(self, user_json: dict):
+        self.raw = user_json
         self.id: int = user_json['id']
         self.is_bot: bool = user_json['is_bot']
         if 'last_name' in user_json:
@@ -87,6 +88,7 @@ class Bot(User):
 
 class Message:
     def __init__(self, msg_json: dict):
+        self.raw = msg_json
         self.chat = Chat(msg_json['chat'])
         self.id: int = msg_json['message_id']
         self.from_ = User(msg_json['from'])
