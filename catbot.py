@@ -85,8 +85,23 @@ class Bot(User):
                     if criteria(msg):
                         action(msg, **action_kw)
 
-    def send_message(self, **kw):
-        return self.api('sendMessage', kw)
+    def send_message(self, chat_id, **kw):
+        """
+        :param kw: Keyword arguments defined in Telegram bot api. See https://core.telegram.org/bots/api#sendmessage
+            General keywords:
+                - chat_id: Required. Unique identifier for the target chat or username of the target channel
+                - parse_mode: Optional. Should be one of MarkdownV2 or HTML or Markdown.
+                - disable_web_page_preview: Optional. Should be True or False. Disables link previews for links
+                                            in this message.
+                - disable_notification: Optional. Should be True or False. Sends the message silently. Users will
+                                        receive a notification with no sound.
+                - reply_to_message_id: Optional. If the message is a reply, ID of the original message.
+            For plain text messages:
+                - text: Text of the message to be sent, 1-4096 characters after entities parsing.
+        :return:
+        """
+        msg_kw = {'chat_id': chat_id, **kw}
+        return self.api('sendMessage', msg_kw)
 
 
 class Message:
