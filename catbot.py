@@ -29,7 +29,7 @@ class Bot(User):
         get_me_resp: dict = requests.get(self.base_url + 'getMe', **self.proxy_kw).json()
 
         if not get_me_resp['ok']:
-            raise UpdateError('Bot initialization failed.' + get_me_resp['description'])
+            raise ConnectionError('Bot initialization failed.' + get_me_resp['description'])
 
         super().__init__(get_me_resp['result'])
 
@@ -212,6 +212,3 @@ class Chat:
 
     def __str__(self):
         return self.raw
-
-class UpdateError(Exception):
-    pass
