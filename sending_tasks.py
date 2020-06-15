@@ -24,12 +24,19 @@ def new_pages():
                     continue
                 title = change['page_title']
                 user = change['performer']['user_text']
-                bot.send_message(chat_id=config['new_pages']['chat_id'],
-                                 text=f'<a href="https://zh.wikipedia.org/wiki/{title}?redirect=no">{title}</a>'
-                                      f' - <a href="https://zh.wikipedia.org/wiki/Special:Contributions/{user}">'
-                                      f'{user}</a>',
-                                 parse_mode='HTML')
-                print(title)
+                for i in range(5):
+                    try:
+                        bot.send_message(chat_id=config['new_pages']['chat_id'],
+                                         text=f'<a href="https://zh.wikipedia.org/wiki/{title}?redirect=no">{title}</a>'
+                                              f' - <a href="https://zh.wikipedia.org/wiki/Special:Contributions/{user}"'
+                                              f'>{user}</a>',
+                                         parse_mode='HTML')
+                    except ConnectionError:
+                        print(f'Retrying {title} ... {i + 1}')
+                        continue
+                    else:
+                        print(title)
+                        break
 
 
 if __name__ == '__main__':
