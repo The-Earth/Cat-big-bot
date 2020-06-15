@@ -191,8 +191,12 @@ class Message:
 
 class Chat:
     def __init__(self, chat_json: dict):
-        pass
+        self.raw = chat_json
+        self.id: int = chat_json['id']
+        self.type: str = chat_json['type']
 
+    def __str__(self):
+        return self.raw
 
 class UpdateError(Exception):
     pass
