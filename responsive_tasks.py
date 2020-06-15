@@ -33,4 +33,8 @@ if __name__ == '__main__':
     bot.add_task(user_id_cri, user_id)
     bot.add_task(get_chat_id_cri, get_chat_id)
 
-    bot.start()
+    while True:
+        try:
+            bot.start()
+        except ConnectionError as e:
+            print(e.args[0])
