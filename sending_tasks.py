@@ -1,6 +1,7 @@
+import json
+
 from sseclient import SSEClient
 
-import json
 import catbot
 
 config = json.load(open('config.json', 'r', encoding='utf-8'))
