@@ -87,9 +87,9 @@ class Bot(User):
 
     def send_message(self, chat_id, **kw):
         """
+        :param chat_id: Unique identifier for the target chat or username of the target channel
         :param kw: Keyword arguments defined in Telegram bot api. See https://core.telegram.org/bots/api#sendmessage
             General keywords:
-                - chat_id: Required. Unique identifier for the target chat or username of the target channel
                 - parse_mode: Optional. Should be one of MarkdownV2 or HTML or Markdown.
                 - disable_web_page_preview: Optional. Should be True or False. Disables link previews for links
                                             in this message.
