@@ -73,7 +73,7 @@ class Bot(User):
         while True:
             updates = self.get_updates(update_offset)
             for item in updates:
-                update_offset = item['id'] + 1
+                update_offset = item['update_id'] + 1
                 if 'message' in item.keys():
                     msg = Message(item['message'])
                 elif 'edited_message' in item.keys():
