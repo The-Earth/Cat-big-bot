@@ -37,5 +37,5 @@ if __name__ == '__main__':
     while True:
         try:
             bot.start()
-        except ConnectionError as e:
+        except catbot.APIError as e:
             print(e.args[0])

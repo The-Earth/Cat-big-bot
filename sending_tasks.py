@@ -32,7 +32,7 @@ def new_pages():
                                               f' - <a href="https://zh.wikipedia.org/wiki/Special:Contributions/{user}"'
                                               f'>{user}</a>',
                                          parse_mode='HTML')
-                    except ConnectionError:
+                    except catbot.APIError:
                         print(f'Retrying {title} ... {i + 1}')
                         continue
                     else:

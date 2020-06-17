@@ -29,7 +29,7 @@ class Bot(User):
         get_me_resp: dict = requests.get(self.base_url + 'getMe', **self.proxy_kw).json()
 
         if not get_me_resp['ok']:
-            raise ConnectionError('Bot initialization failed.' + get_me_resp['description'])
+            raise APIError('Bot initialization failed.' + get_me_resp['description'])
 
         super().__init__(get_me_resp['result'])
 
@@ -42,7 +42,7 @@ class Bot(User):
     def api(self, action: str, data: dict):
         resp = requests.post(self.base_url + action, data=data, **self.proxy_kw).json()
         if not resp['ok']:
-            raise ConnectionError(f'API request "{action}" failed. {resp["description"]}')
+            raise APIError(f'API request "{action}" failed. {resp["description"]}')
 
         return resp['result']
 
@@ -212,3 +212,7 @@ class Chat:
 
     def __str__(self):
         return self.raw
+
+
+class APIError(Exception):
+    pass
