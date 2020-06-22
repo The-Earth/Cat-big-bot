@@ -4,5 +4,9 @@
     "enable": true,
     "proxy_url": "http://127.0.0.1:9999"
   },
-  "message_bot_stopped": "Bot stopped."
+  "message_bot_stopped": "Bot stopped.",
+  "operator_id": "987654321",
+  "new_pages": {
+    "chat_id": -10012345678
+  }
 }
