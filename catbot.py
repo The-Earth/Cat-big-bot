@@ -46,7 +46,7 @@ class Bot(User):
 
         return resp['result']
 
-    def get_updates(self, offset: int = 0, timeout: int = 60) -> list:
+    def get_updates(self, offset: int=0, timeout: int=60) -> list:
         update_data = {'offset': offset,
                        'timeout': timeout}
 

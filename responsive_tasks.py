@@ -8,8 +8,8 @@ bot = catbot.Bot(config)
 
 
 def user_id_cri(msg: catbot.Message) -> bool:
-    match = '/user_id'
-    return match in msg.commands or f'{match}@{bot.username}' in msg.commands
+    cmd = '/user_id'
+    return cmd in msg.commands or f'{cmd}@{bot.username}' in msg.commands
 
 
 def user_id(msg: catbot.Message):
@@ -20,8 +20,8 @@ def user_id(msg: catbot.Message):
 
 
 def get_chat_id_cri(msg: catbot.Message) -> bool:
-    match = '/chat_id'
-    return match in msg.commands or f'{match}@{bot.username}' in msg.commands
+    cmd = '/chat_id'
+    return cmd in msg.commands or f'{cmd}@{bot.username}' in msg.commands
 
 
 def get_chat_id(msg: catbot.Message):
