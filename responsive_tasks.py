@@ -82,12 +82,103 @@ def start(msg: catbot.Message):
     bot.send_message(chat_id=msg.chat.id, text='For private messaging with my operator, use /pass <message>.')
 
 
+def mark_cri(msg: catbot.Message) -> bool:
+    cmd = '/mark'
+    return cmd in msg.commands or f'{cmd}@{bot.username}' in msg.commands
+
+
+def mark(msg: catbot.Message, rec_file: str):
+    mark_rec = json.load(open(rec_file, 'r', encoding='utf-8'))
+    msg_id = msg.id
+    chat_id = msg.chat.id
+    chat_link = msg.chat.link
+    if chat_link == '':
+        bot.send_message(chat_id, text='/mark supports public groups only.', reply_to_message_id=msg_id)
+        return
+    if not msg.reply:
+        bot.send_message(chat_id, text='Reply the message you want to mark with /mark.', reply_to_message_id=msg_id)
+        return
+    reply_to_id = msg.reply_to_message.id
+
+    comment = msg.text.lstrip('/mark')
+
+    if str(chat_id) not in mark_rec.keys():
+        mark_rec[str(chat_id)] = [{'id': reply_to_id, 'comment': comment}]
+    else:
+        mark_rec[str(chat_id)].append({'id': reply_to_id, 'comment': comment})
+    json.dump(mark_rec, open(rec_file, 'w', encoding='utf-8'), indent=2)
+    bot.send_message(chat_id, text='Marked.', reply_to_message_id=msg_id)
+
+
+def list_marked_cri(msg: catbot.Message) -> bool:
+    cmd = '/list_marked'
+    return cmd in msg.commands or f'{cmd}@{bot.username}' in msg.commands
+
+
+def list_marked(msg: catbot.Message, rec_file: str):
+    mark_rec = json.load(open(rec_file, 'r', encoding='utf-8'))
+    msg_id = msg.id
+    chat_id: int = msg.chat.id
+    chat_link = msg.chat.link
+
+    if chat_link == '':
+        bot.send_message(chat_id, text='/list_marked supports public groups only.', reply_to_message_id=msg_id)
+        return
+
+    if str(chat_id) not in mark_rec.keys() or len(mark_rec[str(chat_id)]) == 0:
+        bot.send_message(chat_id, text='No marks found.', reply_to_message_id=msg_id)
+    else:
+        text = ''
+        for record in mark_rec[str(chat_id)]:
+            text += f'{chat_link}/{record["id"]} {record["comment"]}\n'
+        bot.send_message(chat_id, text=text, reply_to_message_id=msg_id, disable_web_page_preview=True)
+
+
+def unmark_cri(msg: catbot.Message) -> bool:
+    cmd = '/unmark'
+    return cmd in msg.commands or f'{cmd}@{bot.username}' in msg.commands
+
+
+def unmark(msg:catbot.Message, rec_file: str):
+    mark_rec = json.load(open(rec_file, 'r', encoding='utf-8'))
+    msg_id = msg.id
+    chat_id = msg.chat.id
+    chat_link = msg.chat.link
+    if chat_link == '':
+        bot.send_message(chat_id, text='/unmark supports public groups only.', reply_to_message_id=msg_id)
+        return
+    if msg.reply:
+        reply_to_id = msg.reply_to_message.id
+    else:
+        if len(msg.text) <= 8 or msg.text[7] != ' ':
+            bot.send_message(chat_id, text='Reply the message you want to unmark with /unmark or use'
+                                           ' "/unmark <message id>" to unmark.', reply_to_message_id=msg_id)
+            return
+        else:
+            try:
+                reply_to_id = int(msg.text.lstrip('/unmark '))
+            except ValueError:
+                bot.send_message(chat_id, text='Problematic message id, check it.')
+                return
+
+    for i in range(len(mark_rec[str(chat_id)])):
+        if mark_rec[str(chat_id)][i]['id'] == reply_to_id:
+            mark_rec[str(chat_id)].pop(i)
+            json.dump(mark_rec, open(rec_file, 'w', encoding='utf-8'), indent=2)
+            bot.send_message(chat_id, text='Unmarked', reply_to_message_id=msg_id)
+    else:
+        bot.send_message(chat_id, text='The message is not marked', reply_to_message_id=msg_id)
+
+
 if __name__ == '__main__':
     bot.add_task(user_id_cri, user_id)
     bot.add_task(get_chat_id_cri, get_chat_id)
     bot.add_task(pass_on_cri, pass_on)
     bot.add_task(reply_cri, reply)
     bot.add_task(start_cri, start)
+    bot.add_task(mark_cri, mark, rec_file=config['mark_rec'])
+    bot.add_task(list_marked_cri, list_marked, rec_file=config['mark_rec'])
+    bot.add_task(unmark_cri, unmark, rec_file=config['mark_rec'])
 
     while True:
         try:
