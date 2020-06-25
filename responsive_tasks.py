@@ -166,6 +166,7 @@ def unmark(msg:catbot.Message, rec_file: str):
             mark_rec[str(chat_id)].pop(i)
             json.dump(mark_rec, open(rec_file, 'w', encoding='utf-8'), indent=2)
             bot.send_message(chat_id, text='Unmarked', reply_to_message_id=msg_id)
+            break
     else:
         bot.send_message(chat_id, text='The message is not marked', reply_to_message_id=msg_id)
 
