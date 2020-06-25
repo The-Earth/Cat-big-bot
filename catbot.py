@@ -11,9 +11,11 @@ class User:
         else:
             self.name = user_json['first_name']
         if 'username' in user_json:
-            self.username = user_json['username']
+            self.username: str = user_json['username']
+            self.link = 't.me/' + self.username
         else:
             self.username = ''
+            self.link = ''
 
 
 class Bot(User):
@@ -209,6 +211,21 @@ class Chat:
         self.raw = chat_json
         self.id: int = chat_json['id']
         self.type: str = chat_json['type']
+
+        if self.type == 'supergroup' or self.type == 'group' or self.type == 'channel':
+            self.name: str = chat_json['title']
+        else:
+            if 'last_name' in chat_json.keys():
+                self.name = f'{chat_json["first_name"]} {chat_json["last_name"]}'
+            else:
+                self.name = chat_json['first_name']
+
+        if 'username' in chat_json.keys() and self.type != 'private':
+            self.username: str = chat_json['username']
+            self.link = 't.me/' + self.username
+        else:
+            self.username = ''
+            self.link = ''
 
     def __str__(self):
         return self.raw
