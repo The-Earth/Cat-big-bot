@@ -48,11 +48,12 @@ class Bot(User):
 
         return resp['result']
 
-    def get_updates(self, offset: int=0, timeout: int=60) -> list:
+    def get_updates(self, offset: int = 0, timeout: int = 60) -> list:
         update_data = {'offset': offset,
                        'timeout': timeout}
-
-        return self.api('getUpdates', update_data)
+        updates = self.api('getUpdates', update_data)
+        print(updates)
+        return updates
 
     def add_task(self, criteria, action, **action_kw):
         """
