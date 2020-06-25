@@ -19,12 +19,12 @@ def user_id(msg: catbot.Message):
     bot.send_message(text=from_id, chat_id=chat_id, reply_to_message_id=reply_to)
 
 
-def get_chat_id_cri(msg: catbot.Message) -> bool:
+def chat_id_cri(msg: catbot.Message) -> bool:
     cmd = '/chat_id'
     return cmd in msg.commands or f'{cmd}@{bot.username}' in msg.commands
 
 
-def get_chat_id(msg: catbot.Message):
+def chat_id(msg: catbot.Message):
     chat_id = msg.chat.id
     reply_to = msg.id
     bot.send_message(text=chat_id, chat_id=chat_id, reply_to_message_id=reply_to)
@@ -73,7 +73,7 @@ def reply(msg: catbot.Message):
             raise
 
 
-def start_cri(msg: catbot.Message):
+def start_cri(msg: catbot.Message) -> bool:
     cmd = '/start'
     return cmd in msg.commands and msg.chat.type == 'private'
 
@@ -172,7 +172,7 @@ def unmark(msg:catbot.Message, rec_file: str):
 
 if __name__ == '__main__':
     bot.add_task(user_id_cri, user_id)
-    bot.add_task(get_chat_id_cri, get_chat_id)
+    bot.add_task(chat_id_cri, chat_id)
     bot.add_task(pass_on_cri, pass_on)
     bot.add_task(reply_cri, reply)
     bot.add_task(start_cri, start)
