@@ -126,7 +126,10 @@ class Message:
             # forwarded from channels
             self.forward_from_chat = Chat(msg_json['forward_from_chat'])
             self.forward_from_message_id: int = msg_json['forward_from_message_id']
-            self.forward_signature: str = msg_json['forward_signature']
+            if 'forward_signature' in msg_json.keys():
+                self.forward_signature: str = msg_json['forward_signature']
+            else:
+                self.forward_signature = ''
             self.forward = True
         else:
             self.forward = False
