@@ -7,24 +7,24 @@ config = json.load(open('config.json', 'r', encoding='utf-8'))
 bot = catbot.Bot(config)
 
 
-def user_id_cri(msg: catbot.Message) -> bool:
+def get_user_id_cri(msg: catbot.Message) -> bool:
     cmd = '/user_id'
     return cmd in msg.commands or f'{cmd}@{bot.username}' in msg.commands
 
 
-def user_id(msg: catbot.Message):
+def get_user_id(msg: catbot.Message):
     from_id = msg.from_.id
     chat_id = msg.chat.id
     reply_to = msg.id
     bot.send_message(text=from_id, chat_id=chat_id, reply_to_message_id=reply_to)
 
 
-def chat_id_cri(msg: catbot.Message) -> bool:
+def get_chat_id_cri(msg: catbot.Message) -> bool:
     cmd = '/chat_id'
     return cmd in msg.commands or f'{cmd}@{bot.username}' in msg.commands
 
 
-def chat_id(msg: catbot.Message):
+def get_chat_id(msg: catbot.Message):
     chat_id = msg.chat.id
     reply_to = msg.id
     bot.send_message(text=chat_id, chat_id=chat_id, reply_to_message_id=reply_to)
@@ -64,8 +64,8 @@ def reply(msg: catbot.Message):
     content = ' '.join(text.split(' ')[1:])
     try:
         bot.send_message(chat_id=to_id, text='Reply from operator:\n' + content)
-    except catbot.APIError as e:
-        if 'chat not found' in e.args[0]:
+    except catbot.APIError as ex:
+        if 'chat not found' in ex.args[0]:
             bot.send_message(chat_id=config['operator_id'],
                              text='User id invalid. Reply format: /reply <user id> <text>')
         else:
@@ -139,7 +139,7 @@ def unmark_cri(msg: catbot.Message) -> bool:
     return cmd in msg.commands or f'{cmd}@{bot.username}' in msg.commands
 
 
-def unmark(msg:catbot.Message, rec_file: str):
+def unmark(msg: catbot.Message, rec_file: str):
     mark_rec = json.load(open(rec_file, 'r', encoding='utf-8'))
     msg_id = msg.id
     chat_id = msg.chat.id
@@ -185,8 +185,8 @@ def unmark(msg:catbot.Message, rec_file: str):
 
 
 if __name__ == '__main__':
-    bot.add_task(user_id_cri, user_id)
-    bot.add_task(chat_id_cri, chat_id)
+    bot.add_task(get_user_id_cri, get_user_id)
+    bot.add_task(get_chat_id_cri, get_chat_id)
     bot.add_task(pass_on_cri, pass_on)
     bot.add_task(reply_cri, reply)
     bot.add_task(start_cri, start)
