@@ -165,7 +165,6 @@ def unmark(msg:catbot.Message, rec_file: str):
                 try:
                     unmark_list.append(int(item))
                 except ValueError:
-                    bot.send_message(chat_id, text='Problematic message id, check it.')
                     continue
 
     response_text = 'Unmarked:\n'
@@ -182,7 +181,7 @@ def unmark(msg:catbot.Message, rec_file: str):
     if response_text != 'Unmarked:\n':
         bot.send_message(chat_id, text=response_text, reply_to_message_id=msg_id)
     else:
-        bot.send_message(chat_id, text='Selected messages are not marked.')
+        bot.send_message(chat_id, text='Selected messages are not marked.', reply_to_message_id=msg_id)
 
 
 if __name__ == '__main__':
