@@ -147,28 +147,39 @@ def unmark(msg:catbot.Message, rec_file: str):
     if chat_link == '':
         bot.send_message(chat_id, text='/unmark supports groups only.', reply_to_message_id=msg_id)
         return
+
+    unmark_list = []
     if msg.reply:
-        reply_to_id = msg.reply_to_message.id
+        unmark_list.append(msg.reply_to_message.id)
     else:
-        if len(msg.text) <= 8 or msg.text[7] != ' ':
+        user_input_token = msg.text.split()
+        if len(user_input_token) == 1:
             bot.send_message(chat_id, text='Reply the message you want to unmark with /unmark or use'
                                            ' "/unmark <message id>" to unmark.', reply_to_message_id=msg_id)
             return
         else:
-            try:
-                reply_to_id = int(msg.text.lstrip('/unmark '))
-            except ValueError:
-                bot.send_message(chat_id, text='Problematic message id, check it.')
-                return
+            for item in user_input_token[1:]:
+                try:
+                    unmark_list.append(int(item))
+                except ValueError:
+                    bot.send_message(chat_id, text='Problematic message id, check it.')
+                    continue
 
-    for i in range(len(mark_rec[str(chat_id)])):
-        if mark_rec[str(chat_id)][i]['id'] == reply_to_id:
+    response_text = 'Unmarked:\n'
+    i = 0
+    while i < len(mark_rec[str(chat_id)]):
+        if mark_rec[str(chat_id)][i]['id'] in unmark_list:
+            unmarked_id = mark_rec[str(chat_id)][i]['id']
             mark_rec[str(chat_id)].pop(i)
             json.dump(mark_rec, open(rec_file, 'w', encoding='utf-8'), indent=2)
-            bot.send_message(chat_id, text='Unmarked', reply_to_message_id=msg_id)
-            break
+            response_text += str(unmarked_id) + '\n'
+        else:
+            i += 1
+
+    if response_text != 'Unmarked:\n':
+        bot.send_message(chat_id, text=response_text, reply_to_message_id=msg_id)
     else:
-        bot.send_message(chat_id, text='The message is not marked', reply_to_message_id=msg_id)
+        bot.send_message(chat_id, text='Selected messages are not marked.')
 
 
 if __name__ == '__main__':
