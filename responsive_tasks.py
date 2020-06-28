@@ -147,6 +147,9 @@ def unmark(msg:catbot.Message, rec_file: str):
     if chat_link == '':
         bot.send_message(chat_id, text='/unmark supports groups only.', reply_to_message_id=msg_id)
         return
+    if str(chat_id) not in mark_rec.keys() or len(mark_rec[str(chat_id)]) == 0:
+        bot.send_message(chat_id, text='This group does not have any marks yet.', reply_to_message_id=msg_id)
+        return
 
     unmark_list = []
     if msg.reply:
