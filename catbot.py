@@ -229,7 +229,7 @@ class Chat:
             self.link = 't.me/' + self.username
         elif self.type != 'private':
             self.username = ''
-            self.link = f't.me/c/{str(self.id).lstrip("-100")}'
+            self.link = f't.me/c/{str(self.id).replace("-100", "")}'
         else:
             self.username = ''
             self.link = ''
