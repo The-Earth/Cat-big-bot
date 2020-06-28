@@ -93,7 +93,7 @@ def mark(msg: catbot.Message, rec_file: str):
     chat_id = msg.chat.id
     chat_link = msg.chat.link
     if chat_link == '':
-        bot.send_message(chat_id, text='/mark supports public groups only.', reply_to_message_id=msg_id)
+        bot.send_message(chat_id, text='/mark supports groups only.', reply_to_message_id=msg_id)
         return
     if not msg.reply:
         bot.send_message(chat_id, text='Reply the message you want to mark with /mark.', reply_to_message_id=msg_id)
@@ -122,7 +122,7 @@ def list_marked(msg: catbot.Message, rec_file: str):
     chat_link = msg.chat.link
 
     if chat_link == '':
-        bot.send_message(chat_id, text='/list_marked supports public groups only.', reply_to_message_id=msg_id)
+        bot.send_message(chat_id, text='/list_marked supports groups only.', reply_to_message_id=msg_id)
         return
 
     if str(chat_id) not in mark_rec.keys() or len(mark_rec[str(chat_id)]) == 0:
@@ -145,7 +145,7 @@ def unmark(msg:catbot.Message, rec_file: str):
     chat_id = msg.chat.id
     chat_link = msg.chat.link
     if chat_link == '':
-        bot.send_message(chat_id, text='/unmark supports public groups only.', reply_to_message_id=msg_id)
+        bot.send_message(chat_id, text='/unmark supports groups only.', reply_to_message_id=msg_id)
         return
     if msg.reply:
         reply_to_id = msg.reply_to_message.id

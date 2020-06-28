@@ -227,6 +227,9 @@ class Chat:
         if 'username' in chat_json.keys() and self.type != 'private':
             self.username: str = chat_json['username']
             self.link = 't.me/' + self.username
+        elif self.type != 'private':
+            self.username = ''
+            self.link = f't.me/c/{str(self.id).lstrip("-100")}'
         else:
             self.username = ''
             self.link = ''
