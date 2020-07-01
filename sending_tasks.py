@@ -21,8 +21,6 @@ def new_pages():
             else:
                 if change['meta']['domain'] != 'zh.wikipedia.org':
                     continue
-                if change['page_namespace'] != 0:
-                    continue
                 title = change['page_title']
                 user = change['performer']['user_text']
                 for i in range(5):
