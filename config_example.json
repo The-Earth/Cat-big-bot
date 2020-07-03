@@ -4,9 +4,26 @@
     "enable": true,
     "proxy_url": "http://127.0.0.1:9999"
   },
-  "message_bot_stopped": "Bot stopped.",
   "operator_id": "987654321",
   "new_pages": {
-    "chat_id": -10012345678
+    "all": -1001234567890,
+    "main": -1000987654321
+  },
+    "mark_rec": "example.json",
+  "messages": {
+    "pass_on_new_msg_to_op": "收到新消息，来自<a href=\"tg://user?id={from_id}\">{from_name}</a> (ID: {from_id},{from_username})\n----\n{text}",
+    "pass_on_sending_failed": "发送失败。",
+    "pass_on_sent_to_op_succ": "消息已发送至主人。",
+    "pass_on_reply_from_op": "主人回复：\n{content}",
+    "pass_on_reply_invalid_id": "用户 ID 无效。回复格式：/reply <user id> <text>",
+    "pass_on_reply_succ": "消息已回复至{to_id}",
+    "start": "若要与我的主人聊天，请使用： /pass 你想说的话",
+    "mark_private": "/mark 相关功能只能在群组中使用。",
+    "mark_empty_reply": "请在使用 /mark 的同时回复您想要记录的消息。",
+    "mark_succ": "已记录。使用 /list_marked 查看已记录的消息。",
+    "mark_list_empty": "本群尚未有被记录的消息。",
+    "mark_unmark_prompt": "用 /unmark 回复想要取消记录的消息，或使用 /unmark 消息ID 消息ID ... 。",
+    "mark_unmark_succ": "下列消息已不在记录列表上：\n",
+    "mark_unmark_failed": "所指定的消息ID不在记录上。"
   }
 }

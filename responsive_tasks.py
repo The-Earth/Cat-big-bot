@@ -42,14 +42,15 @@ def pass_on(msg: catbot.Message):
     text = msg.text.lstrip('/pass ')
     try:
         bot.send_message(chat_id=config['operator_id'],
-                         text=f'Received PM from <a href="tg://user?id={from_id}">{from_name}</a> (ID: {from_id}, '
-                              f'{from_username})\n----\n{text}',
+                         text=config['messages']['pass_on_new_msg_to_op'].format(from_id=from_id, from_name=from_name,
+                                                                                 from_username=from_username,
+                                                                                 text=text),
                          parse_mode='HTML')
     except catbot.APIError:
-        bot.send_message(chat_id=from_id, text='Sending failed. Please retry later.')
+        bot.send_message(chat_id=from_id, text=config['messages']['pass_on_sending_failed'])
         raise
     finally:
-        bot.send_message(chat_id=from_id, text='Message sent to operator.')
+        bot.send_message(chat_id=from_id, text=config['messages']['pass_on_sent_to_op_succ'])
 
 
 def reply_cri(msg: catbot.Message) -> bool:
@@ -63,14 +64,17 @@ def reply(msg: catbot.Message):
     to_id = text.split(' ')[0]
     content = ' '.join(text.split(' ')[1:])
     try:
-        bot.send_message(chat_id=to_id, text='Reply from operator:\n' + content)
+        bot.send_message(chat_id=to_id, text=config['messages']['pass_on_reply_from_op'].format(content=content))
     except catbot.APIError as ex:
         if 'chat not found' in ex.args[0]:
             bot.send_message(chat_id=config['operator_id'],
-                             text='User id invalid. Reply format: /reply <user id> <text>')
+                             text=config['messages']['pass_on_reply_invalid_id'])
         else:
-            bot.send_message(chat_id=config['operator_id'], text='Sending failed.')
+            bot.send_message(chat_id=config['operator_id'], text=config['messages']['pass_on_sending_failed'])
             raise
+    else:
+        bot.send_message(chat_id=config['operator_id'],
+                         text=config['messages']['pass_on_reply_succ'].format(to_id=to_id))
 
 
 def start_cri(msg: catbot.Message) -> bool:
@@ -79,7 +83,7 @@ def start_cri(msg: catbot.Message) -> bool:
 
 
 def start(msg: catbot.Message):
-    bot.send_message(chat_id=msg.chat.id, text='For private messaging with my operator, use /pass <message>.')
+    bot.send_message(chat_id=msg.chat.id, text=config['messages']['start'])
 
 
 def mark_cri(msg: catbot.Message) -> bool:
@@ -93,10 +97,10 @@ def mark(msg: catbot.Message, rec_file: str):
     chat_id = msg.chat.id
     chat_link = msg.chat.link
     if chat_link == '':
-        bot.send_message(chat_id, text='/mark supports groups only.', reply_to_message_id=msg_id)
+        bot.send_message(chat_id, text=config['messages']['mark_private'], reply_to_message_id=msg_id)
         return
     if not msg.reply:
-        bot.send_message(chat_id, text='Reply the message you want to mark with /mark.', reply_to_message_id=msg_id)
+        bot.send_message(chat_id, text=config['messages']['mark_empty_reply'], reply_to_message_id=msg_id)
         return
     reply_to_id = msg.reply_to_message.id
 
@@ -107,7 +111,7 @@ def mark(msg: catbot.Message, rec_file: str):
     else:
         mark_rec[str(chat_id)].append({'id': reply_to_id, 'comment': comment})
     json.dump(mark_rec, open(rec_file, 'w', encoding='utf-8'), indent=2)
-    bot.send_message(chat_id, text='Marked.', reply_to_message_id=msg_id)
+    bot.send_message(chat_id, text=config['messages']['mark_succ'], reply_to_message_id=msg_id)
 
 
 def list_marked_cri(msg: catbot.Message) -> bool:
@@ -122,11 +126,11 @@ def list_marked(msg: catbot.Message, rec_file: str):
     chat_link = msg.chat.link
 
     if chat_link == '':
-        bot.send_message(chat_id, text='/list_marked supports groups only.', reply_to_message_id=msg_id)
+        bot.send_message(chat_id, text=config['messages']['mark_private'], reply_to_message_id=msg_id)
         return
 
     if str(chat_id) not in mark_rec.keys() or len(mark_rec[str(chat_id)]) == 0:
-        bot.send_message(chat_id, text='No marks found.', reply_to_message_id=msg_id)
+        bot.send_message(chat_id, text=config['messages']['mark_list_empty'], reply_to_message_id=msg_id)
     else:
         text = ''
         for record in mark_rec[str(chat_id)]:
@@ -145,10 +149,10 @@ def unmark(msg: catbot.Message, rec_file: str):
     chat_id = msg.chat.id
     chat_link = msg.chat.link
     if chat_link == '':
-        bot.send_message(chat_id, text='/unmark supports groups only.', reply_to_message_id=msg_id)
+        bot.send_message(chat_id, text=config['messages']['mark_private'], reply_to_message_id=msg_id)
         return
     if str(chat_id) not in mark_rec.keys() or len(mark_rec[str(chat_id)]) == 0:
-        bot.send_message(chat_id, text='This group does not have any marks yet.', reply_to_message_id=msg_id)
+        bot.send_message(chat_id, text=config['messages']['mark_list_empty'], reply_to_message_id=msg_id)
         return
 
     unmark_list = []
@@ -157,8 +161,7 @@ def unmark(msg: catbot.Message, rec_file: str):
     else:
         user_input_token = msg.text.split()
         if len(user_input_token) == 1:
-            bot.send_message(chat_id, text='Reply the message you want to unmark with /unmark or use'
-                                           ' "/unmark <message id>" to unmark.', reply_to_message_id=msg_id)
+            bot.send_message(chat_id, text=config['messages']['mark_unmark_prompt'], reply_to_message_id=msg_id)
             return
         else:
             for item in user_input_token[1:]:
@@ -167,7 +170,7 @@ def unmark(msg: catbot.Message, rec_file: str):
                 except ValueError:
                     continue
 
-    response_text = 'Unmarked:\n'
+    response_text = config['messages']['mark_unmark_succ']
     i = 0
     while i < len(mark_rec[str(chat_id)]):
         if mark_rec[str(chat_id)][i]['id'] in unmark_list:
@@ -178,10 +181,10 @@ def unmark(msg: catbot.Message, rec_file: str):
         else:
             i += 1
 
-    if response_text != 'Unmarked:\n':
+    if response_text != config['messages']['mark_unmark_succ']:
         bot.send_message(chat_id, text=response_text, reply_to_message_id=msg_id)
     else:
-        bot.send_message(chat_id, text='Selected messages are not marked.', reply_to_message_id=msg_id)
+        bot.send_message(chat_id, text=config['messages']['mark_unmark_failed'], reply_to_message_id=msg_id)
 
 
 if __name__ == '__main__':
