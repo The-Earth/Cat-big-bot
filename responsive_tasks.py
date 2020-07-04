@@ -111,7 +111,7 @@ def mark(msg: catbot.Message, rec_file: str):
         mark_rec[str(chat_id)] = [{'id': reply_to_id, 'comment': comment}]
     else:
         mark_rec[str(chat_id)].append({'id': reply_to_id, 'comment': comment})
-    json.dump(mark_rec, open(rec_file, 'w', encoding='utf-8'), indent=2)
+    json.dump(mark_rec, open(rec_file, 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
     bot.send_message(chat_id, text=config['messages']['mark_succ'], reply_to_message_id=msg_id)
 
 
@@ -175,7 +175,7 @@ def unmark(msg: catbot.Message, rec_file: str):
         if mark_rec[str(chat_id)][i]['id'] in unmark_list:
             unmarked_id = mark_rec[str(chat_id)][i]['id']
             mark_rec[str(chat_id)].pop(i)
-            json.dump(mark_rec, open(rec_file, 'w', encoding='utf-8'), indent=2)
+            json.dump(mark_rec, open(rec_file, 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
             response_text += str(unmarked_id) + '\n'
         else:
             i += 1
@@ -200,5 +200,5 @@ if __name__ == '__main__':
         try:
             bot.start()
         except KeyboardInterrupt:
-            json.dump(config, open('config.json', 'w', encoding='utf-8'))
+            json.dump(config, open('config.json', 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
             break
