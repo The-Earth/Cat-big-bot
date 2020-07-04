@@ -7,9 +7,15 @@ config = json.load(open('config.json', 'r', encoding='utf-8'))
 bot = catbot.Bot(config)
 
 
+def command_detector(cmd: str, msg: catbot.Message) -> bool:
+    if cmd in msg.commands:
+        return msg.text.startswith(cmd)
+    elif f'{cmd}@{bot.username}' in msg.commands:
+        return msg.text.startswith(f'{cmd}@{bot.username}')
+
+
 def get_user_id_cri(msg: catbot.Message) -> bool:
-    cmd = '/user_id'
-    return cmd in msg.commands or f'{cmd}@{bot.username}' in msg.commands
+    return command_detector('/user_id', msg)
 
 
 def get_user_id(msg: catbot.Message):
@@ -20,8 +26,7 @@ def get_user_id(msg: catbot.Message):
 
 
 def get_chat_id_cri(msg: catbot.Message) -> bool:
-    cmd = '/chat_id'
-    return cmd in msg.commands or f'{cmd}@{bot.username}' in msg.commands
+    return command_detector('/chat_id', msg)
 
 
 def get_chat_id(msg: catbot.Message):
@@ -31,8 +36,7 @@ def get_chat_id(msg: catbot.Message):
 
 
 def pass_on_cri(msg: catbot.Message) -> bool:
-    cmd = '/pass'
-    return cmd in msg.commands and msg.chat.type == 'private'
+    return command_detector('/pass', msg) and msg.chat.type == 'private'
 
 
 def pass_on(msg: catbot.Message):
@@ -54,9 +58,8 @@ def pass_on(msg: catbot.Message):
 
 
 def reply_cri(msg: catbot.Message) -> bool:
-    cmd = '/reply'
     chat_id = msg.chat.id
-    return cmd in msg.commands and chat_id == config['operator_id']
+    return command_detector('/reply', msg) and chat_id == config['operator_id']
 
 
 def reply(msg: catbot.Message):
@@ -78,8 +81,7 @@ def reply(msg: catbot.Message):
 
 
 def start_cri(msg: catbot.Message) -> bool:
-    cmd = '/start'
-    return cmd in msg.commands and msg.chat.type == 'private'
+    return command_detector('/start', msg) and msg.chat.type == 'private'
 
 
 def start(msg: catbot.Message):
@@ -87,8 +89,7 @@ def start(msg: catbot.Message):
 
 
 def mark_cri(msg: catbot.Message) -> bool:
-    cmd = '/mark'
-    return cmd in msg.commands or f'{cmd}@{bot.username}' in msg.commands
+    return command_detector('/mark', msg)
 
 
 def mark(msg: catbot.Message, rec_file: str):
@@ -115,8 +116,7 @@ def mark(msg: catbot.Message, rec_file: str):
 
 
 def list_marked_cri(msg: catbot.Message) -> bool:
-    cmd = '/list_marked'
-    return cmd in msg.commands or f'{cmd}@{bot.username}' in msg.commands
+    return command_detector('/list_marked', msg)
 
 
 def list_marked(msg: catbot.Message, rec_file: str):
@@ -139,8 +139,7 @@ def list_marked(msg: catbot.Message, rec_file: str):
 
 
 def unmark_cri(msg: catbot.Message) -> bool:
-    cmd = '/unmark'
-    return cmd in msg.commands or f'{cmd}@{bot.username}' in msg.commands
+    return command_detector('/unmark', msg)
 
 
 def unmark(msg: catbot.Message, rec_file: str):
