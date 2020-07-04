@@ -86,7 +86,11 @@ class Bot(User):
 
                 for criteria, action, action_kw in self.tasks:
                     if criteria(msg):
-                        action(msg, **action_kw)
+                        try:
+                            action(msg, **action_kw)
+                        except APIError as e:
+                            print(e.args[0])
+
 
     def send_message(self, chat_id, **kw):
         """
