@@ -201,3 +201,6 @@ if __name__ == '__main__':
             bot.start()
         except catbot.APIError as e:
             print(e.args[0])
+        except KeyboardInterrupt:
+            json.dump(config, open('config.json', 'w', encoding='utf-8'))
+            break
