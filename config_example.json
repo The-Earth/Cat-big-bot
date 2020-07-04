@@ -4,12 +4,15 @@
     "enable": true,
     "proxy_url": "http://127.0.0.1:9999"
   },
-  "operator_id": "987654321",
+  "operator_id": 987654321,
   "new_pages": {
     "all": -1001234567890,
     "main": -1000987654321
   },
-    "mark_rec": "example.json",
+  "trusted": [
+    123456789
+  ],
+  "mark_rec": "example.json",
   "messages": {
     "pass_on_new_msg_to_op": "收到新消息，来自<a href=\"tg://user?id={from_id}\">{from_name}</a> (ID: {from_id},{from_username})\n----\n{text}",
     "pass_on_sending_failed": "发送失败。",
