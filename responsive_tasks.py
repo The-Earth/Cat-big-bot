@@ -23,8 +23,7 @@ def trusted(func):
     """
     def wrapper(*args, **kwargs):
         msg: catbot.Message = args[0]
-        _config = json.load(open('config.json', 'r', encoding='utf-8'))
-        if msg.from_.id not in _config['trusted'] and msg.from_.id != _config['operator_id']:
+        if msg.from_.id not in config['trusted'] and msg.from_.id != config['operator_id']:
             return False
 
         return func(*args, **kwargs)
