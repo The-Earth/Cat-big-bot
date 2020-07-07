@@ -26,7 +26,10 @@
     "mark_succ": "已记录。使用 /list_marked 查看已记录的消息。",
     "mark_list_empty": "本群尚未有被记录的消息。",
     "mark_unmark_prompt": "用 /unmark 回复想要取消记录的消息，或使用 /unmark 消息ID 消息ID ... 。",
-    "mark_unmark_succ": "下列消息已不在记录列表上：\n",
-    "mark_unmark_failed": "所指定的消息ID不在记录上。"
+    "mark_unmark_succ": "下列消息已被移除：\n",
+    "mark_unmark_failed": "未能移除记录，所指定的消息ID不在记录上。",
+    "set_trusted_prompt": "用 /set_trusted 回复想要取消记录的消息，或使用 /set_trusted 用户ID 用户ID ... 。",
+    "set_trusted_succ": "下列用户已被列为可信用户：\n",
+    "set_trusted_failed": "未能新增可信用户ID，所指定的用户已在可信列表中。"
   }
 }

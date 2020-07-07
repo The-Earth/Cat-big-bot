@@ -159,6 +159,7 @@ def list_marked(msg: catbot.Message, rec_file: str):
         bot.send_message(chat_id, text=text, reply_to_message_id=msg_id, disable_web_page_preview=True)
 
 
+@trusted
 def unmark_cri(msg: catbot.Message) -> bool:
     return command_detector('/unmark', msg)
 
@@ -207,6 +208,47 @@ def unmark(msg: catbot.Message, rec_file: str):
         bot.send_message(chat_id, text=config['messages']['mark_unmark_failed'], reply_to_message_id=msg_id)
 
 
+@trusted
+def set_trusted_cri(msg: catbot.Message) -> bool:
+    return command_detector('/set_trusted', msg)
+
+
+def set_trusted(msg: catbot.Message):
+    msg_id = msg.id
+    chat_id = msg.chat.id
+    trusted_rec = config['trusted']
+
+    new_trusted_id = []
+    if msg.reply:
+        new_trusted_id.append(msg.reply_to_message.from_.id)
+    else:
+        user_input_token = msg.text.split()
+        if len(user_input_token) == 1:
+            bot.send_message(chat_id, text=config['messages']['set_trusted_prompt'], reply_to_message_id=msg_id)
+            return
+        else:
+            for item in user_input_token[1:]:
+                try:
+                    new_trusted_id.append(int(item))
+                except ValueError:
+                    continue
+
+    trusted_set = set(trusted_rec)
+    old_trusted_set = trusted_set.copy()
+    trusted_set.update(new_trusted_id)
+    delta = trusted_set - old_trusted_set
+    if len(delta) == 0:
+        bot.send_message(chat_id, text=config['messages']['set_trusted_failed'], reply_to_message_id=msg_id)
+    else:
+        reply_text = config['messages']['set_trusted_succ']
+        for item in delta:
+            reply_text += str(item) + '\n'
+            config['trusted'].append(item)
+
+        json.dump(config, open('config.json', 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+        bot.send_message(chat_id, text=reply_text, reply_to_message_id=msg_id)
+
+
 if __name__ == '__main__':
     bot.add_task(get_user_id_cri, get_user_id)
     bot.add_task(get_chat_id_cri, get_chat_id)
@@ -216,6 +258,7 @@ if __name__ == '__main__':
     bot.add_task(mark_cri, mark, rec_file=config['mark_rec'])
     bot.add_task(list_marked_cri, list_marked, rec_file=config['mark_rec'])
     bot.add_task(unmark_cri, unmark, rec_file=config['mark_rec'])
+    bot.add_task(set_trusted_cri, set_trusted)
 
     while True:
         try:
