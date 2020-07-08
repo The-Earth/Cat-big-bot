@@ -30,6 +30,6 @@
     "mark_unmark_failed": "未能移除记录，所指定的消息ID不在记录上。",
     "set_trusted_prompt": "用 /set_trusted 回复想要取消记录的消息，或使用 /set_trusted 用户ID 用户ID ... 。",
     "set_trusted_succ": "下列用户已被列为可信用户：\n",
-    "set_trusted_failed": "未能新增可信用户ID，所指定的用户已在可信列表中。"
+    "set_trusted_failed": "未能新增可信用户ID，用户ID错误或所指定的用户已在可信列表中。"
   }
 }
