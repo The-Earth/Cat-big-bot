@@ -12,6 +12,8 @@ def command_detector(cmd: str, msg: catbot.Message) -> bool:
         return msg.text.startswith(cmd)
     elif f'{cmd}@{bot.username}' in msg.commands:
         return msg.text.startswith(f'{cmd}@{bot.username}')
+    else:
+        return False
 
 
 def trusted(func):
