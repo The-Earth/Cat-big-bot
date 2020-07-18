@@ -91,7 +91,6 @@ class Bot(User):
                         except APIError as e:
                             print(e.args[0])
 
-
     def send_message(self, chat_id, **kw):
         """
         :param chat_id: Unique identifier for the target chat or username of the target channel
@@ -109,6 +108,69 @@ class Bot(User):
         """
         msg_kw = {'chat_id': chat_id, **kw}
         return self.api('sendMessage', msg_kw)
+
+    def get_chat(self, chat_id: int):
+        try:
+            chat = Chat(self.api('getChat', {'chat_id': chat_id}))
+        except APIError as e:
+            if e.args[0] == 'Bad Request: chat not found':
+                raise ChatNotFoundError
+            else:
+                raise
+        else:
+            return chat
+
+    def get_chat_member(self, chat_id: int, user_id: int):
+        """
+        Typically, use this method to build a ChatMember object.
+        :param chat_id: ID of the chat that the ChatMember object will belong to.
+        :param user_id: ID of the target user.
+        :return: A ChatMember object, including info about permissions granted to the user in a specific chat.
+        """
+        chat = self.get_chat(chat_id)
+        try:
+            chat_member = ChatMember(self.api('getChatMember', {'chat_id': chat_id, 'user_id': user_id}), chat)
+        except APIError as e:
+            if e.args[0] == 'Bad Request: user not found':
+                raise UserNotFoundError
+            else:
+                raise
+        else:
+            return chat_member
+
+
+class ChatMember(User):
+    def __init__(self, member_json: dict, chat):
+        """
+        Typically, build a ChatMember object from Bot.get_chat_member() method, which automatically get corresponding
+        Chat object.
+        :param member_json: Raw response from "getChatMember" API
+        :param chat: A Chat object which this ChatMember belongs to.
+        """
+        super().__init__(member_json['user'])
+        self.raw = f'{{"chat_member": {member_json}, "chat": {chat.raw}}}'
+        self.chat = chat
+        self.status: str = member_json['status']
+        if 'custom_title' in member_json.keys():
+            self.custom_title: str = member_json['custom_title']
+        if self.status == 'administrator':
+            self.can_be_edited: bool = member_json['can_be_edited']
+            self.can_delete_messages: bool = member_json['can_delete_messages']
+            self.can_promote_members: bool = member_json['can_promote_members']
+        if self.status == 'administrator' or self.status == 'restricted':
+            self.can_change_info: bool = member_json['can_change_info']
+            self.can_invite_users: bool = member_json['can_invite_users']
+            self.can_pin_messages: bool = member_json['can_pin_messages']
+        if self.status == 'restricted':
+            self.is_member: bool = member_json['is_member']
+            self.can_send_messages: bool = member_json['can_send_messages']
+            self.can_send_media_messages: bool = member_json['can_send_media_messages']
+            self.can_send_polls: bool = member_json['can_send_polls']
+            self.can_send_other_messages: bool = member_json['can_send_other_messages'] # stickers, gifs and inline bots
+            self.can_add_web_page_previews: bool = member_json['can_add_web_page_previews'] # "embed links" in client
+
+    def __str__(self):
+        return self.raw
 
 
 class Message:
@@ -243,4 +305,12 @@ class Chat:
 
 
 class APIError(Exception):
+    pass
+
+
+class UserNotFoundError(APIError):
+    pass
+
+
+class ChatNotFoundError(APIError):
     pass
