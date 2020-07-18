@@ -131,7 +131,7 @@ class Bot(User):
         try:
             chat_member = ChatMember(self.api('getChatMember', {'chat_id': chat_id, 'user_id': user_id}), chat)
         except APIError as e:
-            if e.args[0] == 'Bad Request: user not found':
+            if 'Bad Request: user not found' in e.args[0]:
                 raise UserNotFoundError
             else:
                 raise
