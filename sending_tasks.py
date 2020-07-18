@@ -17,7 +17,7 @@ def new_pages():
             try:
                 change = json.loads(event.data)
             except ValueError:
-                pass
+                continue
             else:
                 if change['meta']['domain'] != 'zh.wikipedia.org':
                     continue
@@ -48,4 +48,9 @@ def sending_trials(chat_id: int, title: str, user: str):
 
 
 if __name__ == '__main__':
-    new_pages()
+    from requests.exceptions import HTTPError
+    while True:
+        try:
+            new_pages()
+        except HTTPError:
+            continue
