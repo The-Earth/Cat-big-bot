@@ -166,8 +166,8 @@ class ChatMember(User):
             self.can_send_messages: bool = member_json['can_send_messages']
             self.can_send_media_messages: bool = member_json['can_send_media_messages']
             self.can_send_polls: bool = member_json['can_send_polls']
-            self.can_send_other_messages: bool = member_json['can_send_other_messages'] # stickers, gifs and inline bots
-            self.can_add_web_page_previews: bool = member_json['can_add_web_page_previews'] # "embed links" in client
+            self.can_send_other_messages: bool = member_json['can_send_other_messages']  # sticker, gif and inline bot
+            self.can_add_web_page_previews: bool = member_json['can_add_web_page_previews']  # "embed links" in client
 
     def __str__(self):
         return self.raw

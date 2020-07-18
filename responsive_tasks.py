@@ -19,9 +19,10 @@ def command_detector(cmd: str, msg: catbot.Message) -> bool:
 def trusted(func):
     """
     Decorate criteria functions. Decorated functions return False if the user who sent the message is not listed in
-    trusted user list, which is defined in config['trusted_rec']. That means, only trusted users are allowed to perform decorated
-    operations. Requests from other users are ignored. As defined in catbot.Bot.add_task(), the first positional
-    argument of the decorated function should be a catbot.Message() object, which is created from update stream.
+    trusted user list, which is defined in config['trusted_rec']. That means, only trusted users are allowed to perform
+    decorated operations. Requests from other users are ignored. As defined in catbot.Bot.add_task(), the first
+    positional argument of the decorated function should be a catbot.Message() object, which is created from the update
+    stream.
     """
     def wrapper(*args, **kwargs):
         trusted_list: list = json.load(open(config['trusted_rec'], 'r', encoding='utf-8'))
