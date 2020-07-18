@@ -250,6 +250,35 @@ def set_trusted(msg: catbot.Message):
         bot.send_message(chat_id, text=reply_text, reply_to_message_id=msg_id)
 
 
+@trusted
+def list_trusted_cri(msg: catbot.Message) -> bool:
+    return command_detector('/list_trusted', msg)
+
+
+def list_trusted(msg: catbot.Message):
+    trusted_list: list = json.load(open('config.json', 'r', encoding='utf-8'))['trusted']
+    resp_list = []
+    bot.send_message(msg.chat.id, text=config['messages']['list_trusted_pre'], reply_to_message_id=msg.id)
+    for trusted_id in trusted_list:
+        try:
+            trusted_user = bot.get_chat_member(msg.chat.id, trusted_id)
+            if trusted_user.status == 'left' or trusted_user.status == 'kicked':
+                continue
+        except catbot.UserNotFoundError:
+            continue
+        else:
+            resp_list.append(trusted_user)
+
+    resp_text: str = config['messages']['list_trusted_succ']
+    for user in resp_list:
+        resp_text += f'{user.name}、'
+    resp_text = resp_text.rstrip('、')
+    if len(resp_list) == 0:
+        resp_text = config['messages']['list_trusted_empty']
+
+    bot.send_message(msg.chat.id, text=resp_text, parse_mode='HTML', reply_to_message_id=msg.id)
+
+
 if __name__ == '__main__':
     bot.add_task(get_user_id_cri, get_user_id)
     bot.add_task(get_chat_id_cri, get_chat_id)
@@ -260,6 +289,7 @@ if __name__ == '__main__':
     bot.add_task(list_marked_cri, list_marked, rec_file=config['mark_rec'])
     bot.add_task(unmark_cri, unmark, rec_file=config['mark_rec'])
     bot.add_task(set_trusted_cri, set_trusted)
+    bot.add_task(list_trusted_cri, list_trusted)
 
     while True:
         try:
