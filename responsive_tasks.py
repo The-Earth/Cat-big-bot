@@ -75,7 +75,7 @@ def pass_on(msg: catbot.Message):
     except catbot.APIError:
         bot.send_message(chat_id=from_id, text=config['messages']['pass_on_sending_failed'])
         raise
-    finally:
+    else:
         bot.send_message(chat_id=from_id, text=config['messages']['pass_on_sent_to_op_succ'])
 
 
