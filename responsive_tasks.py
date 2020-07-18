@@ -217,7 +217,7 @@ def set_trusted_cri(msg: catbot.Message) -> bool:
 def set_trusted(msg: catbot.Message):
     msg_id = msg.id
     chat_id = msg.chat.id
-    trusted_rec = config['trusted']
+    trusted_list: list = json.load(open('config.json', 'r', encoding='utf-8'))['trusted']
 
     new_trusted_id = []
     if msg.reply:
@@ -234,7 +234,7 @@ def set_trusted(msg: catbot.Message):
                 except ValueError:
                     continue
 
-    trusted_set = set(trusted_rec)
+    trusted_set = set(trusted_list)
     old_trusted_set = trusted_set.copy()
     trusted_set.update(new_trusted_id)
     delta = trusted_set - old_trusted_set
