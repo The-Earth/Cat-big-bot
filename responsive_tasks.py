@@ -19,13 +19,14 @@ def command_detector(cmd: str, msg: catbot.Message) -> bool:
 def trusted(func):
     """
     Decorate criteria functions. Decorated functions return False if the user who sent the message is not listed in
-    trusted user list, which is defined in config.json. That means, only trusted users are allowed to perform decorated
+    trusted user list, which is defined in trusted.json. That means, only trusted users are allowed to perform decorated
     operations. Requests from other users are ignored. As defined in catbot.Bot.add_task(), the first positional
     argument of the decorated function should be a catbot.Message() object, which is created from update stream.
     """
     def wrapper(*args, **kwargs):
+        trusted_list: list = json.load(open('trusted.json', 'r', encoding='utf-8'))
         msg: catbot.Message = args[0]
-        if msg.from_.id not in config['trusted'] and msg.from_.id != config['operator_id']:
+        if msg.from_.id not in trusted_list and msg.from_.id != config['operator_id']:
             return False
 
         return func(*args, **kwargs)
@@ -217,7 +218,7 @@ def set_trusted_cri(msg: catbot.Message) -> bool:
 def set_trusted(msg: catbot.Message):
     msg_id = msg.id
     chat_id = msg.chat.id
-    trusted_list: list = json.load(open('config.json', 'r', encoding='utf-8'))['trusted']
+    trusted_list: list = json.load(open('trusted.json', 'r', encoding='utf-8'))
 
     new_trusted_id = []
     if msg.reply:
@@ -244,9 +245,8 @@ def set_trusted(msg: catbot.Message):
         reply_text = config['messages']['set_trusted_succ']
         for item in delta:
             reply_text += str(item) + '\n'
-            config['trusted'].append(item)
 
-        json.dump(config, open('config.json', 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+        json.dump(list(trusted_set), open('trusted.json', 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
         bot.send_message(chat_id, text=reply_text, reply_to_message_id=msg_id)
 
 
@@ -256,7 +256,7 @@ def list_trusted_cri(msg: catbot.Message) -> bool:
 
 
 def list_trusted(msg: catbot.Message):
-    trusted_list: list = json.load(open('config.json', 'r', encoding='utf-8'))['trusted']
+    trusted_list: list = json.load(open('trusted.json', 'r', encoding='utf-8'))
     resp_list = []
     bot.send_message(msg.chat.id, text=config['messages']['list_trusted_pre'], reply_to_message_id=msg.id)
     for trusted_id in trusted_list:
