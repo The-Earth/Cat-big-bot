@@ -115,8 +115,8 @@ def mark_cri(msg: catbot.Message) -> bool:
     return command_detector('/mark', msg)
 
 
-def mark(msg: catbot.Message, rec_file: str):
-    mark_rec = json.load(open(rec_file, 'r', encoding='utf-8'))
+def mark(msg: catbot.Message):
+    mark_rec = json.load(open(config['mark_rec'], 'r', encoding='utf-8'))
     msg_id = msg.id
     chat_id = msg.chat.id
     chat_link = msg.chat.link
@@ -134,7 +134,7 @@ def mark(msg: catbot.Message, rec_file: str):
         mark_rec[str(chat_id)] = [{'id': reply_to_id, 'comment': comment}]
     else:
         mark_rec[str(chat_id)].append({'id': reply_to_id, 'comment': comment})
-    json.dump(mark_rec, open(rec_file, 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+    json.dump(mark_rec, open(config['mark_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
     bot.send_message(chat_id, text=config['messages']['mark_succ'], reply_to_message_id=msg_id)
 
 
@@ -142,8 +142,8 @@ def list_marked_cri(msg: catbot.Message) -> bool:
     return command_detector('/list_marked', msg)
 
 
-def list_marked(msg: catbot.Message, rec_file: str):
-    mark_rec = json.load(open(rec_file, 'r', encoding='utf-8'))
+def list_marked(msg: catbot.Message):
+    mark_rec = json.load(open(config['mark_rec'], 'r', encoding='utf-8'))
     msg_id = msg.id
     chat_id: int = msg.chat.id
     chat_link = msg.chat.link
@@ -166,8 +166,8 @@ def unmark_cri(msg: catbot.Message) -> bool:
     return command_detector('/unmark', msg)
 
 
-def unmark(msg: catbot.Message, rec_file: str):
-    mark_rec = json.load(open(rec_file, 'r', encoding='utf-8'))
+def unmark(msg: catbot.Message):
+    mark_rec = json.load(open(config['mark_rec'], 'r', encoding='utf-8'))
     msg_id = msg.id
     chat_id = msg.chat.id
     chat_link = msg.chat.link
@@ -199,7 +199,7 @@ def unmark(msg: catbot.Message, rec_file: str):
         if mark_rec[str(chat_id)][i]['id'] in unmark_list:
             unmarked_id = mark_rec[str(chat_id)][i]['id']
             mark_rec[str(chat_id)].pop(i)
-            json.dump(mark_rec, open(rec_file, 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+            json.dump(mark_rec, open(config['mark_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
             response_text += str(unmarked_id) + '\n'
         else:
             i += 1
@@ -285,9 +285,9 @@ if __name__ == '__main__':
     bot.add_task(pass_on_cri, pass_on)
     bot.add_task(reply_cri, reply)
     bot.add_task(start_cri, start)
-    bot.add_task(mark_cri, mark, rec_file=config['mark_rec'])
-    bot.add_task(list_marked_cri, list_marked, rec_file=config['mark_rec'])
-    bot.add_task(unmark_cri, unmark, rec_file=config['mark_rec'])
+    bot.add_task(mark_cri, mark)
+    bot.add_task(list_marked_cri, list_marked)
+    bot.add_task(unmark_cri, unmark)
     bot.add_task(set_trusted_cri, set_trusted)
     bot.add_task(list_trusted_cri, list_trusted)
 
