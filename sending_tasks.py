@@ -29,6 +29,7 @@ def new_pages():
 
                 sending_trials(config['new_pages']['all'], title, user)
                 sending_trials(config['new_pages']['main'], title, user)
+                print(title)
 
 
 def sending_trials(chat_id: int, title: str, user: str):
@@ -43,7 +44,6 @@ def sending_trials(chat_id: int, title: str, user: str):
             print(f'Retrying {title} ... {i + 1}')
             continue
         else:
-            print(title)
             break
 
 
