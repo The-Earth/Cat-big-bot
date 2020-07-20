@@ -253,7 +253,7 @@ def set_trusted(msg: catbot.Message):
 
 @trusted
 def list_trusted_cri(msg: catbot.Message) -> bool:
-    return command_detector('/list_trusted', msg)
+    return command_detector('/list_trusted', msg) and msg.chat.type != 'private'
 
 
 def list_trusted(msg: catbot.Message):
