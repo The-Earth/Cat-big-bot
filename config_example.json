@@ -9,6 +9,21 @@
     "all": -1001234567890,
     "main": -1000987654321
   },
+  "help": {
+    "public": [
+      "/chat_id 查看当前聊天的 ID（群组 ID）",
+      "/user_id 查看所回复消息的发出者的 ID，或不回复消息查看自己的 ID",
+      "/mark 标记所回复的消息（记录仅限本群）",
+      "/list_marked 查看本群中被标记的消息",
+      "/unmark 取消标记",
+      "/set_trusted 将用户对我设定为可信（标记后于全域可信，谨慎使用）",
+      "/list_trusted 列出本群中的可信用户"
+    ],
+    "private": [
+      "/pass 在此命令后附加您想对主人说的话，这些话将被发送到主人那里",
+      "/reply 主人使用此命令回复消息"
+    ]
+  },
   "mark_rec": "mark.json",
   "trusted_rec": "trusted.json",
   "messages": {
@@ -18,15 +33,15 @@
     "pass_on_reply_from_op": "主人回复：\n{content}",
     "pass_on_reply_invalid_id": "用户 ID 无效。回复格式：/reply <user id> <text>",
     "pass_on_reply_succ": "消息已回复至{to_id}",
-    "start": "若要与我的主人聊天，请使用： /pass 你想说的话",
+    "start": "使用 /help 查看帮助",
     "mark_private": "/mark 相关功能只能在群组中使用。",
-    "mark_empty_reply": "请在使用 /mark 的同时回复您想要记录的消息。",
-    "mark_succ": "已记录。使用 /list_marked 查看已记录的消息。",
-    "mark_list_empty": "本群尚未有被记录的消息。",
-    "mark_unmark_prompt": "用 /unmark 回复想要取消记录的消息，或使用 /unmark 消息ID 消息ID ... 。",
+    "mark_empty_reply": "请在使用 /mark 的同时回复您想要标记的消息。",
+    "mark_succ": "已标记。使用 /list_marked 查看已标记的消息。",
+    "mark_list_empty": "本群尚未有被标记的消息。",
+    "mark_unmark_prompt": "用 /unmark 回复想要取消标记的消息，或使用 /unmark 消息ID 消息ID ... 。",
     "mark_unmark_succ": "下列消息已被移除：\n",
-    "mark_unmark_failed": "未能移除记录，所指定的消息ID不在记录上。",
-    "set_trusted_prompt": "用 /set_trusted 回复想要取消记录的消息，或使用 /set_trusted 用户ID 用户ID ... 。",
+    "mark_unmark_failed": "未能移除标记，所指定的消息ID不在记录中。",
+    "set_trusted_prompt": "用 /set_trusted 回复需要设定为可信的用户，或使用 /set_trusted 用户ID 用户ID ... 。",
     "set_trusted_succ": "下列用户已被列为可信用户：\n",
     "set_trusted_failed": "未能新增可信用户ID，用户ID错误或所指定的用户已在可信列表中。",
     "list_trusted_pre": "执行时间较长，请耐心等待",

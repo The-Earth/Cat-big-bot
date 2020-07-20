@@ -280,6 +280,26 @@ def list_trusted(msg: catbot.Message):
     bot.send_message(msg.chat.id, text=resp_text, parse_mode='HTML', reply_to_message_id=msg.id)
 
 
+def bot_help_cri(msg: catbot.Message) -> bool:
+    if msg.chat.type == 'private':
+        return command_detector('/help', msg)
+    else:
+        trusted_list = json.load(open(config['trusted_rec'], 'r', encoding='utf-8'))
+        if msg.from_.id not in trusted_list and msg.from_.id != config['operator_id']:
+            return False
+
+        return f'/help@{bot.username}' in msg.commands and msg.text.startswith(f'/help@{bot.username}')
+
+
+def bot_help(msg: catbot.Message):
+    if msg.chat.type == 'private':
+        resp_text = '\n'.join(config['help']['private'])
+        bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id)
+    else:
+        resp_text = '\n'.join(config['help']['public'])
+        bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id)
+
+
 if __name__ == '__main__':
     bot.add_task(get_user_id_cri, get_user_id)
     bot.add_task(get_chat_id_cri, get_chat_id)
@@ -291,6 +311,7 @@ if __name__ == '__main__':
     bot.add_task(unmark_cri, unmark)
     bot.add_task(set_trusted_cri, set_trusted)
     bot.add_task(list_trusted_cri, list_trusted)
+    bot.add_task(bot_help_cri, bot_help)
 
     while True:
         try:
