@@ -25,7 +25,11 @@ def trusted(func):
     stream.
     """
     def wrapper(*args, **kwargs):
-        trusted_list: list = json.load(open(config['trusted_rec'], 'r', encoding='utf-8'))
+        try:
+            trusted_list: list = json.load(open(config['trusted_rec'], 'r', encoding='utf-8'))
+        except FileNotFoundError:
+            json.dump([], open(config['trusted_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+            return False
         msg: catbot.Message = args[0]
         if msg.from_.id not in trusted_list and msg.from_.id != config['operator_id']:
             return False
@@ -40,13 +44,11 @@ def get_user_id_cri(msg: catbot.Message) -> bool:
 
 
 def get_user_id(msg: catbot.Message):
-    chat_id = msg.chat.id
-    reply_to = msg.id
     if msg.reply:
         res_id = msg.reply_to_message.from_.id
     else:
         res_id = msg.from_.id
-    bot.send_message(text=res_id, chat_id=chat_id, reply_to_message_id=reply_to)
+    bot.send_message(chat_id=msg.chat.id, text=res_id, reply_to_message_id=msg.id)
 
 
 def get_chat_id_cri(msg: catbot.Message) -> bool:
@@ -54,9 +56,7 @@ def get_chat_id_cri(msg: catbot.Message) -> bool:
 
 
 def get_chat_id(msg: catbot.Message):
-    chat_id = msg.chat.id
-    reply_to = msg.id
-    bot.send_message(text=chat_id, chat_id=chat_id, reply_to_message_id=reply_to)
+    bot.send_message(chat_id=msg.chat.id, text=msg.chat.id, reply_to_message_id=msg.id)
 
 
 def pass_on_cri(msg: catbot.Message) -> bool:
@@ -64,26 +64,24 @@ def pass_on_cri(msg: catbot.Message) -> bool:
 
 
 def pass_on(msg: catbot.Message):
-    from_id = msg.from_.id
     from_username = '@' + msg.from_.username if msg.from_.username != '' else 'No username'
-    from_name = msg.from_.name
     text = msg.text.lstrip('/pass ')
     try:
         bot.send_message(chat_id=config['operator_id'],
-                         text=config['messages']['pass_on_new_msg_to_op'].format(from_id=from_id, from_name=from_name,
+                         text=config['messages']['pass_on_new_msg_to_op'].format(from_id=msg.from_.id,
+                                                                                 from_name=msg.from_.name,
                                                                                  from_username=from_username,
                                                                                  text=text),
                          parse_mode='HTML')
     except catbot.APIError:
-        bot.send_message(chat_id=from_id, text=config['messages']['pass_on_sending_failed'])
+        bot.send_message(chat_id=msg.from_.id, text=config['messages']['pass_on_sending_failed'])
         raise
     else:
-        bot.send_message(chat_id=from_id, text=config['messages']['pass_on_sent_to_op_succ'])
+        bot.send_message(chat_id=msg.from_.id, text=config['messages']['pass_on_sent_to_op_succ'])
 
 
 def reply_cri(msg: catbot.Message) -> bool:
-    chat_id = msg.chat.id
-    return command_detector('/reply', msg) and chat_id == config['operator_id']
+    return command_detector('/reply', msg) and msg.chat.id == config['operator_id']
 
 
 def reply(msg: catbot.Message):
@@ -117,26 +115,28 @@ def mark_cri(msg: catbot.Message) -> bool:
 
 
 def mark(msg: catbot.Message):
-    mark_rec = json.load(open(config['mark_rec'], 'r', encoding='utf-8'))
-    msg_id = msg.id
-    chat_id = msg.chat.id
+    try:
+        mark_rec = json.load(open(config['mark_rec'], 'r', encoding='utf-8'))
+    except FileNotFoundError:
+        mark_rec = {}
+
     chat_link = msg.chat.link
     if chat_link == '':
-        bot.send_message(chat_id, text=config['messages']['mark_private'], reply_to_message_id=msg_id)
+        bot.send_message(msg.chat.id, text=config['messages']['mark_private'], reply_to_message_id=msg.id)
         return
     if not msg.reply:
-        bot.send_message(chat_id, text=config['messages']['mark_empty_reply'], reply_to_message_id=msg_id)
+        bot.send_message(msg.chat.id, text=config['messages']['mark_empty_reply'], reply_to_message_id=msg.id)
         return
     reply_to_id = msg.reply_to_message.id
 
     comment = msg.text.lstrip('/mark')
 
-    if str(chat_id) not in mark_rec.keys():
-        mark_rec[str(chat_id)] = [{'id': reply_to_id, 'comment': comment}]
+    if str(msg.chat.id) not in mark_rec.keys():
+        mark_rec[str(msg.chat.id)] = [{'id': reply_to_id, 'comment': comment}]
     else:
-        mark_rec[str(chat_id)].append({'id': reply_to_id, 'comment': comment})
+        mark_rec[str(msg.chat.id)].append({'id': reply_to_id, 'comment': comment})
     json.dump(mark_rec, open(config['mark_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
-    bot.send_message(chat_id, text=config['messages']['mark_succ'], reply_to_message_id=msg_id)
+    bot.send_message(msg.chat.id, text=config['messages']['mark_succ'], reply_to_message_id=msg.id)
 
 
 def list_marked_cri(msg: catbot.Message) -> bool:
@@ -144,22 +144,23 @@ def list_marked_cri(msg: catbot.Message) -> bool:
 
 
 def list_marked(msg: catbot.Message):
-    mark_rec = json.load(open(config['mark_rec'], 'r', encoding='utf-8'))
-    msg_id = msg.id
-    chat_id: int = msg.chat.id
-    chat_link = msg.chat.link
+    try:
+        mark_rec = json.load(open(config['mark_rec'], 'r', encoding='utf-8'))
+    except FileNotFoundError:
+        json.dump({}, open(config['mark_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+        mark_rec = json.load(open(config['mark_rec'], 'r', encoding='utf-8'))
 
-    if chat_link == '':
-        bot.send_message(chat_id, text=config['messages']['mark_private'], reply_to_message_id=msg_id)
+    if msg.chat.link == '':
+        bot.send_message(msg.chat.id, text=config['messages']['mark_private'], reply_to_message_id=msg.id)
         return
 
-    if str(chat_id) not in mark_rec.keys() or len(mark_rec[str(chat_id)]) == 0:
-        bot.send_message(chat_id, text=config['messages']['mark_list_empty'], reply_to_message_id=msg_id)
+    if str(msg.chat.id) not in mark_rec.keys() or len(mark_rec[str(msg.chat.id)]) == 0:
+        bot.send_message(msg.chat.id, text=config['messages']['mark_list_empty'], reply_to_message_id=msg.id)
     else:
         text = ''
-        for record in mark_rec[str(chat_id)]:
-            text += f'{chat_link}/{record["id"]} {record["comment"]}\n'
-        bot.send_message(chat_id, text=text, reply_to_message_id=msg_id, disable_web_page_preview=True)
+        for record in mark_rec[str(msg.chat.id)]:
+            text += f'{msg.chat.link}/{record["id"]} {record["comment"]}\n'
+        bot.send_message(msg.chat.id, text=text, reply_to_message_id=msg.id, disable_web_page_preview=True)
 
 
 @trusted
@@ -168,15 +169,17 @@ def unmark_cri(msg: catbot.Message) -> bool:
 
 
 def unmark(msg: catbot.Message):
-    mark_rec = json.load(open(config['mark_rec'], 'r', encoding='utf-8'))
-    msg_id = msg.id
-    chat_id = msg.chat.id
-    chat_link = msg.chat.link
-    if chat_link == '':
-        bot.send_message(chat_id, text=config['messages']['mark_private'], reply_to_message_id=msg_id)
+    try:
+        mark_rec = json.load(open(config['mark_rec'], 'r', encoding='utf-8'))
+    except FileNotFoundError:
+        json.dump({}, open(config['mark_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+        mark_rec = json.load(open(config['mark_rec'], 'r', encoding='utf-8'))
+
+    if msg.chat.link == '':
+        bot.send_message(msg.chat.id, text=config['messages']['mark_private'], reply_to_message_id=msg.id)
         return
-    if str(chat_id) not in mark_rec.keys() or len(mark_rec[str(chat_id)]) == 0:
-        bot.send_message(chat_id, text=config['messages']['mark_list_empty'], reply_to_message_id=msg_id)
+    if str(msg.chat.id) not in mark_rec.keys() or len(mark_rec[str(msg.chat.id)]) == 0:
+        bot.send_message(msg.chat.id, text=config['messages']['mark_list_empty'], reply_to_message_id=msg.id)
         return
 
     unmark_list = []
@@ -185,7 +188,7 @@ def unmark(msg: catbot.Message):
     else:
         user_input_token = msg.text.split()
         if len(user_input_token) == 1:
-            bot.send_message(chat_id, text=config['messages']['mark_unmark_prompt'], reply_to_message_id=msg_id)
+            bot.send_message(msg.chat.id, text=config['messages']['mark_unmark_prompt'], reply_to_message_id=msg.id)
             return
         else:
             for item in user_input_token[1:]:
@@ -196,19 +199,19 @@ def unmark(msg: catbot.Message):
 
     response_text = config['messages']['mark_unmark_succ']
     i = 0
-    while i < len(mark_rec[str(chat_id)]):
-        if mark_rec[str(chat_id)][i]['id'] in unmark_list:
-            unmarked_id = mark_rec[str(chat_id)][i]['id']
-            mark_rec[str(chat_id)].pop(i)
+    while i < len(mark_rec[str(msg.chat.id)]):
+        if mark_rec[str(msg.chat.id)][i]['id'] in unmark_list:
+            unmarked_id = mark_rec[str(msg.chat.id)][i]['id']
+            mark_rec[str(msg.chat.id)].pop(i)
             json.dump(mark_rec, open(config['mark_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
             response_text += str(unmarked_id) + '\n'
         else:
             i += 1
 
     if response_text != config['messages']['mark_unmark_succ']:
-        bot.send_message(chat_id, text=response_text, reply_to_message_id=msg_id)
+        bot.send_message(msg.chat.id, text=response_text, reply_to_message_id=msg.id)
     else:
-        bot.send_message(chat_id, text=config['messages']['mark_unmark_failed'], reply_to_message_id=msg_id)
+        bot.send_message(msg.chat.id, text=config['messages']['mark_unmark_failed'], reply_to_message_id=msg.id)
 
 
 @trusted
@@ -217,9 +220,10 @@ def set_trusted_cri(msg: catbot.Message) -> bool:
 
 
 def set_trusted(msg: catbot.Message):
-    msg_id = msg.id
-    chat_id = msg.chat.id
-    trusted_list: list = json.load(open(config['trusted_rec'], 'r', encoding='utf-8'))
+    try:
+        trusted_list: list = json.load(open(config['trusted_rec'], 'r', encoding='utf-8'))
+    except FileNotFoundError:
+        trusted_list = []
 
     new_trusted_id = []
     if msg.reply:
@@ -227,7 +231,7 @@ def set_trusted(msg: catbot.Message):
     else:
         user_input_token = msg.text.split()
         if len(user_input_token) == 1:
-            bot.send_message(chat_id, text=config['messages']['set_trusted_prompt'], reply_to_message_id=msg_id)
+            bot.send_message(msg.chat.id, text=config['messages']['set_trusted_prompt'], reply_to_message_id=msg.id)
             return
         else:
             for item in user_input_token[1:]:
@@ -241,14 +245,14 @@ def set_trusted(msg: catbot.Message):
     trusted_set.update(new_trusted_id)
     delta = trusted_set - old_trusted_set
     if len(delta) == 0:
-        bot.send_message(chat_id, text=config['messages']['set_trusted_failed'], reply_to_message_id=msg_id)
+        bot.send_message(msg.chat.id, text=config['messages']['set_trusted_failed'], reply_to_message_id=msg.id)
     else:
         reply_text = config['messages']['set_trusted_succ']
         for item in delta:
             reply_text += str(item) + '\n'
 
         json.dump(list(trusted_set), open(config['trusted_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
-        bot.send_message(chat_id, text=reply_text, reply_to_message_id=msg_id)
+        bot.send_message(msg.chat.id, text=reply_text, reply_to_message_id=msg.id)
 
 
 @trusted
@@ -257,7 +261,13 @@ def list_trusted_cri(msg: catbot.Message) -> bool:
 
 
 def list_trusted(msg: catbot.Message):
-    trusted_list: list = json.load(open(config['trusted_rec'], 'r', encoding='utf-8'))
+    try:
+        trusted_list: list = json.load(open(config['trusted_rec'], 'r', encoding='utf-8'))
+    except FileNotFoundError:
+        json.dump([], open(config['trusted_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+        bot.send_message(msg.chat.id, text=config['messages']['list_trusted_empty'], reply_to_message_id=msg.id)
+        return
+
     resp_list = []
     bot.send_message(msg.chat.id, text=config['messages']['list_trusted_pre'], reply_to_message_id=msg.id)
     for trusted_id in trusted_list:
