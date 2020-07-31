@@ -300,6 +300,29 @@ def bot_help(msg: catbot.Message):
         bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id)
 
 
+def get_permalink_cri(msg: catbot.Message) -> bool:
+    return command_detector('/permalink', msg) and msg.chat.type == 'private'
+
+
+def get_permalink(msg: catbot.Message):
+    id_list = []
+    user_input_token = msg.text.split()
+    if len(user_input_token) == 1:
+        bot.send_message(msg.chat.id, text=config['messages']['permalink_prompt'], reply_to_message_id=msg.id)
+        return
+    else:
+        for item in user_input_token[1:]:
+            try:
+                id_list.append(int(item))
+            except ValueError:
+                continue
+
+    resp_text = ''
+    for item in id_list:
+        resp_text += f'<a href="tg://user?id={item}">{item}</a>\n'
+    bot.send_message(msg.chat.id, text=resp_text, parse_mode='HTML', reply_to_message_id=msg.id)
+
+
 if __name__ == '__main__':
     bot.add_task(get_user_id_cri, get_user_id)
     bot.add_task(get_chat_id_cri, get_chat_id)
@@ -312,6 +335,7 @@ if __name__ == '__main__':
     bot.add_task(set_trusted_cri, set_trusted)
     bot.add_task(list_trusted_cri, list_trusted)
     bot.add_task(bot_help_cri, bot_help)
+    bot.add_task(get_permalink_cri, get_permalink)
 
     while True:
         try:

@@ -21,7 +21,8 @@
     ],
     "private": [
       "/pass 在此命令后附加您想对主人说的话，这些话将被发送到主人那里",
-      "/reply 主人使用此命令回复消息"
+      "/reply 主人使用此命令回复消息",
+      "/permalink 尝试获取指定 ID 的用户的永久链接"
     ]
   },
   "mark_rec": "mark.json",
@@ -46,6 +47,7 @@
     "set_trusted_failed": "未能新增可信用户ID，用户ID错误或所指定的用户已在可信列表中。",
     "list_trusted_pre": "执行时间较长，请耐心等待",
     "list_trusted_succ": "此群中被本机器人信任的用户：",
-    "list_trusted_empty": "此群无本机器人信任的用户。"
+    "list_trusted_empty": "此群无本机器人信任的用户。",
+    "permalink_prompt": "命令格式：/permalink 用户ID 用户ID"
   }
 }
