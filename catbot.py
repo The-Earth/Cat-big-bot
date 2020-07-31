@@ -1,3 +1,5 @@
+import threading
+
 import requests
 
 
@@ -87,8 +89,8 @@ class Bot(User):
                 for criteria, action, action_kw in self.tasks:
                     if criteria(msg):
                         try:
-                            action(msg, **action_kw)
-                        except APIError as e:
+                            threading.Thread(target=action, args=(msg,), kwargs=action_kw).start()
+                        except APIError as e:   # Exception handling here might be useless
                             print(e.args[0])
 
     def send_message(self, chat_id, **kw):
