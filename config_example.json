@@ -52,7 +52,7 @@
     "permalink_prompt": "命令格式：/permalink 用户ID 用户ID",
     "start_new_pages_succ": "已启用来自中文维基百科的新页面推送，名字空间：{ns}。使用 /set_ns 设置需要推送的名字空间。名字空间列表见 /list_ns",
     "stop_new_pages_succ": "已停止新页面推送。",
-    "list_ns": "-1: 全部\n0: 条目\t1: Talk\n2: User\t3: User talk\n4: Wikipedia\t5: Wikipedia talk\n6: File\t7: File talk\n8: MediaWiki\t9: MediaWiki talk\n10: Template\t 11: Template talk\n12: Help\t13: Help talk\n14: Category\t15: Category talk\n100: Portal\t101: Portal talk\n118: Draft\t119: Draft talk\n828: Module\t829: Module talk\n2600: Topic\n详见 zh.wikipedia.org/wiki/WP:NS",
+    "list_ns": "-1: 全部\n0: 条目       1: Talk\n2: User       3: User talk\n4: Wikipedia       5: Wikipedia talk\n6: File       7: File talk\n8: MediaWiki       9: MediaWiki talk\n10: Template        11: Template talk\n12: Help       13: Help talk\n14: Category       15: Category talk\n100: Portal       101: Portal talk\n118: Draft       119: Draft talk\n828: Module       829: Module talk\n2600: Topic\n详见 zh.wikipedia.org/wiki/WP:NS",
     "set_ns_prompt": "使用 /set_ns 名字空间编号1 名字空间编号2 ... 设定需要推送的名字空间",
     "set_ns_succ": "已设定推送以下名字空间的新页面：\n",
     "set_ns_failed": "所设定的名字空间皆无效。"
