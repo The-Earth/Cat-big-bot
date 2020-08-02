@@ -13,23 +13,35 @@ def new_pages():
     event_url = 'https://stream.wikimedia.org/v2/stream/page-create'
     ssekw = {'proxies': {'https': config['proxy']['proxy_url']}} if config['proxy']['enable'] else {}
     for event in SSEClient(event_url, **ssekw):
-        if event.event == 'message':
-            try:
-                change = json.loads(event.data)
-            except ValueError:
+        if event.event != 'message':
+            continue
+        try:
+            change = json.loads(event.data)
+        except ValueError:
+            continue
+        else:
+            if change['meta']['domain'] != 'zh.wikipedia.org':
                 continue
-            else:
-                if change['meta']['domain'] != 'zh.wikipedia.org':
+            title = change['page_title']
+            user = change['performer']['user_text']
+
+            try:
+                new_pages_rec = json.load(open(config['new_pages_rec'], 'r', encoding='utf-8'))
+            except FileNotFoundError:
+                json.dump({}, open(config['new_pages_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+                continue
+
+            for chat_id in new_pages_rec.keys():
+                if not new_pages_rec[chat_id]['enable']:
                     continue
-                title = change['page_title']
-                user = change['performer']['user_text']
-                if change['page_namespace'] != 0:
-                    sending_trials(config['new_pages']['all'], title, user)
+                if -1 in new_pages_rec[chat_id]['ns']:
+                    sending_trials(int(chat_id), title, user)
+                    continue
+                if change['page_namespace'] in new_pages_rec[chat_id]['ns']:
+                    sending_trials(int(chat_id), title, user)
                     continue
 
-                sending_trials(config['new_pages']['all'], title, user)
-                sending_trials(config['new_pages']['main'], title, user)
-                print(title)
+            print(title)
 
 
 def sending_trials(chat_id: int, title: str, user: str):

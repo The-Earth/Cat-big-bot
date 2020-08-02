@@ -5,10 +5,6 @@
     "proxy_url": "http://127.0.0.1:9999"
   },
   "operator_id": 987654321,
-  "new_pages": {
-    "all": -1001234567890,
-    "main": -1000987654321
-  },
   "help": {
     "public": [
       "/chat_id 查看当前聊天的 ID（群组 ID）",
@@ -17,7 +13,11 @@
       "/list_marked 查看本群中被标记的消息",
       "/unmark 取消标记",
       "/set_trusted 将用户对我设定为可信（标记后于全域可信，谨慎使用）",
-      "/list_trusted 列出本群中的可信用户"
+      "/list_trusted 列出本群中的可信用户",
+      "/start_new_pages 开始中文维基百科的新页面推送",
+      "/list_ns 列出中文维基百科名字空间",
+      "/set_ns 设定新页面推送的名字空间",
+      "/stop_new_pages 停止新页面推送"
     ],
     "private": [
       "/pass 在此命令后附加您想对主人说的话，这些话将被发送到主人那里",
@@ -27,6 +27,7 @@
   },
   "mark_rec": "mark.json",
   "trusted_rec": "trusted.json",
+  "new_pages_rec": "new_pages.json",
   "messages": {
     "pass_on_new_msg_to_op": "收到新消息，来自<a href=\"tg://user?id={from_id}\">{from_name}</a> (ID: {from_id},{from_username})\n----\n{text}",
     "pass_on_sending_failed": "发送失败。",
@@ -48,6 +49,12 @@
     "list_trusted_pre": "执行时间较长，请耐心等待",
     "list_trusted_succ": "此群中被本机器人信任的用户：",
     "list_trusted_empty": "此群无本机器人信任的用户。",
-    "permalink_prompt": "命令格式：/permalink 用户ID 用户ID"
+    "permalink_prompt": "命令格式：/permalink 用户ID 用户ID",
+    "start_new_pages_succ": "已启用来自中文维基百科的新页面推送，名字空间：{ns}。使用 /set_ns 设置需要推送的名字空间。名字空间列表见 /list_ns",
+    "stop_new_pages_succ": "已停止新页面推送。",
+    "list_ns": "-1: 全部\n0: 条目\t1: Talk\n2: User\t3: User talk\n4: Wikipedia\t5: Wikipedia talk\n6: File\t7: File talk\n8: MediaWiki\t9: MediaWiki talk\n10: Template\t 11: Template talk\n12: Help\t13: Help talk\n14: Category\t15: Category talk\n100: Portal\t101: Portal talk\n118: Draft\t119: Draft talk\n828: Module\t829: Module talk\n2600: Topic\n详见 zh.wikipedia.org/wiki/WP:NS",
+    "set_ns_prompt": "使用 /set_ns 名字空间编号1 名字空间编号2 ... 设定需要推送的名字空间",
+    "set_ns_succ": "已设定推送以下名字空间的新页面：\n",
+    "set_ns_failed": "所设定的名字空间皆无效。"
   }
 }

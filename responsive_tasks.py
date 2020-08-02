@@ -333,6 +333,92 @@ def get_permalink(msg: catbot.Message):
     bot.send_message(msg.chat.id, text=resp_text, parse_mode='HTML', reply_to_message_id=msg.id)
 
 
+def start_new_pages_cri(msg: catbot.Message) -> bool:
+    return command_detector('/start_new_pages', msg) and msg.chat.type != 'private'
+
+
+def start_new_pages(msg: catbot.Message):
+    try:
+        new_pages_rec = json.load(open(config['new_pages_rec'], 'r', encoding='utf-8'))
+    except FileNotFoundError:
+        new_pages_rec = {}
+
+    if str(msg.chat.id) in new_pages_rec.keys():
+        new_pages_rec[str(msg.chat.id)]['enable'] = True
+    else:
+        new_pages_rec[str(msg.chat.id)] = {'enable': True, 'ns': []}
+
+    json.dump(new_pages_rec, open(config['new_pages_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+    bot.send_message(msg.chat.id,
+                     text=config['messages']['start_new_pages_succ'].format(ns=new_pages_rec[str(msg.chat.id)]["ns"]),
+                     reply_to_message_id=msg.id)
+
+
+def stop_new_pages_cri(msg: catbot.Message) -> bool:
+    return command_detector('/stop_new_pages', msg) and msg.chat.type != 'private'
+
+
+def stop_new_pages(msg: catbot.Message):
+    try:
+        new_pages_rec = json.load(open(config['new_pages_rec'], 'r', encoding='utf-8'))
+    except FileNotFoundError:
+        new_pages_rec = {}
+
+    if str(msg.chat.id) in new_pages_rec.keys():
+        new_pages_rec[str(msg.chat.id)]['enable'] = False
+    else:
+        new_pages_rec[str(msg.chat.id)] = {'enable': False, 'ns': []}
+
+    json.dump(new_pages_rec, open(config['new_pages_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+    bot.send_message(msg.chat.id, text=config['messages']['stop_new_pages_succ'], reply_to_message_id=msg.id)
+
+
+def list_ns_cri(msg: catbot.Message) -> bool:
+    return command_detector('/list_ns', msg)
+
+
+def list_ns(msg: catbot.Message):
+    bot.send_message(msg.chat.id, text=config['messages']['list_ns'], reply_to_message_id=msg.id)
+
+
+def set_ns_cri(msg: catbot.Message) -> bool:
+    return command_detector('/set_ns', msg)
+
+
+def set_ns(msg: catbot.Message):
+    try:
+        new_pages_rec = json.load(open(config['new_pages_rec'], 'r', encoding='utf-8'))
+    except FileNotFoundError:
+        new_pages_rec = {}
+
+    user_input_token = msg.text.split(' ')
+    if len(user_input_token) == 1:
+        bot.send_message(msg.chat.id, text=config['messages']['set_ns_prompt'], reply_to_message_id=msg.id)
+        return
+    else:
+        ns = []
+        for item in user_input_token[1:]:
+            try:
+                ns.append(int(item))
+            except ValueError:
+                continue
+
+    if str(msg.chat.id) in new_pages_rec.keys():
+        new_pages_rec[str(msg.chat.id)]['ns'] = ns
+    else:
+        new_pages_rec[str(msg.chat.id)] = {'enable': False, 'ns': ns}
+
+    if len(ns) == 0:
+        bot.send_message(msg.chat.id, text=config['messages']['set_ns_failed'], reply_to_message_id=msg.id)
+    else:
+        resp_text: str = config['messages']['set_ns_succ']
+        for item in ns:
+            resp_text += str(item) + ', '
+        resp_text = resp_text.rstrip(', ')
+        json.dump(new_pages_rec, open(config['new_pages_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+        bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id)
+
+
 if __name__ == '__main__':
     bot.add_task(get_user_id_cri, get_user_id)
     bot.add_task(get_chat_id_cri, get_chat_id)
@@ -346,6 +432,10 @@ if __name__ == '__main__':
     bot.add_task(list_trusted_cri, list_trusted)
     bot.add_task(bot_help_cri, bot_help)
     bot.add_task(get_permalink_cri, get_permalink)
+    bot.add_task(list_ns_cri, list_ns)
+    bot.add_task(start_new_pages_cri, start_new_pages)
+    bot.add_task(stop_new_pages_cri, stop_new_pages)
+    bot.add_task(set_ns_cri, set_ns)
 
     while True:
         try:
