@@ -90,7 +90,7 @@ class Bot(User):
                     if criteria(msg):
                         try:
                             threading.Thread(target=action, args=(msg,), kwargs=action_kw).start()
-                        except APIError as e:   # Exception handling here might be useless
+                        except APIError as e:  # Exception handling here might be useless
                             print(e.args[0])
 
     def send_message(self, chat_id, **kw):
@@ -295,7 +295,7 @@ class Chat:
         if 'username' in chat_json.keys() and self.type != 'private':
             self.username: str = chat_json['username']
             self.link = 't.me/' + self.username
-        elif self.type != 'private':
+        elif self.type != 'private' and str(self.id).startswith('-100'):
             self.username = ''
             self.link = f't.me/c/{str(self.id).replace("-100", "")}'
         else:
