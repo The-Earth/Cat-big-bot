@@ -408,6 +408,99 @@ def set_ns(msg: catbot.Message):
         bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id)
 
 
+def block_private_cri(msg: catbot.Message) -> bool:
+    return command_detector('/block', msg) and msg.chat.id == config['operator_id']
+
+
+def block_private(msg: catbot.Message):
+    blocked_list, rec = record_empty_test('blocked', list)
+
+    user_input_token = msg.text.split()
+    id_to_block = []
+    if len(user_input_token) == 1:
+        bot.send_message(config['operator_id'], text=config['messages']['block_prompt'], reply_to_message_id=msg.id)
+        return
+    else:
+        for item in user_input_token[1:]:
+            try:
+                id_to_block.append(int(item))
+            except ValueError:
+                continue
+
+    blocked_set = set(blocked_list)
+    old_blocked_set = blocked_set.copy()
+    blocked_set.update(id_to_block)
+    delta = blocked_set - old_blocked_set
+    if len(delta) == 0:
+        bot.send_message(config['operator_id'], text=config['messages']['block_failed'], reply_to_message_id=msg.id)
+    else:
+        reply_text = config['messages']['block_succ']
+        for item in delta:
+            reply_text += str(item) + '\n'
+
+        rec['blocked'] = list(blocked_set)
+        json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+        bot.send_message(config['operator_id'], text=reply_text, reply_to_message_id=msg.id)
+
+
+def list_block_private_cri(msg: catbot.Message) -> bool:
+    return command_detector('/list_blocked', msg) and msg.chat.id == config['operator_id']
+
+
+def list_block_private(msg: catbot.Message):
+    blocked_list = record_empty_test('blocked', list)[0]
+    resp_text = ''
+    if len(blocked_list) == 0:
+        bot.send_message(config['operator_id'], text=config['messages']['list_block_empty'], reply_to_message_id=msg.id)
+        return
+    for item in blocked_list:
+        resp_text += f'<a href="tg://user?id={item}">{item}</a>\n'
+
+    bot.send_message(config['operator_id'], text=resp_text, parse_mode='HTML', reply_to_message_id=msg.id)
+
+
+def unblock_private_cri(msg: catbot.Message) -> bool:
+    return command_detector('/unblock', msg) and msg.chat.id == config['operator_id']
+
+
+def unblock_private(msg: catbot.Message):
+    blocked_list, rec = record_empty_test('blocked', list)
+
+    user_input_token = msg.text.split()
+    unblocked_id = []
+    if len(user_input_token) == 1:
+        bot.send_message(config['operator_id'], text=config['messages']['unblock_prompt'], reply_to_message_id=msg.id)
+        return
+    else:
+        for item in user_input_token[1:]:
+            try:
+                blocked_list.remove(int(item))
+            except ValueError:
+                continue
+            else:
+                unblocked_id.append(item)
+
+    if len(unblocked_id) == 0:
+        bot.send_message(config['operator_id'], text=config['messages']['unblock_failed'], reply_to_message_id=msg.id)
+    else:
+        rec['blocked'] = blocked_list
+        json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+        resp_text = config['messages']['unblock_succ'] + '\n'.join(unblocked_id)
+        bot.send_message(config['operator_id'], text=resp_text, reply_to_message_id=msg.id)
+
+
+def delete_blocked_private_cri(msg: catbot.Message) -> bool:
+    blocked_list = record_empty_test('blocked', list)[0]
+    return msg.chat.id in blocked_list
+
+
+def delete_blocked_private(msg: catbot.Message):
+    try:
+        bot.api('deleteMessage', data={'chat_id': msg.chat.id, 'message_id': msg.id})
+    except catbot.APIError:
+        pass
+
+
 if __name__ == '__main__':
     bot.add_task(get_user_id_cri, get_user_id)
     bot.add_task(get_chat_id_cri, get_chat_id)
@@ -425,6 +518,10 @@ if __name__ == '__main__':
     bot.add_task(start_new_pages_cri, start_new_pages)
     bot.add_task(stop_new_pages_cri, stop_new_pages)
     bot.add_task(set_ns_cri, set_ns)
+    bot.add_task(block_private_cri, block_private)
+    bot.add_task(list_block_private_cri, list_block_private)
+    bot.add_task(unblock_private_cri, unblock_private)
+    bot.add_task(delete_blocked_private_cri, delete_blocked_private)
 
     while True:
         try:

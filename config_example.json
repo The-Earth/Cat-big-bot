@@ -53,6 +53,13 @@
     "list_ns": "-1: 全部\n0: 条目       1: Talk\n2: User       3: User talk\n4: Wikipedia       5: Wikipedia talk\n6: File       7: File talk\n8: MediaWiki       9: MediaWiki talk\n10: Template        11: Template talk\n12: Help       13: Help talk\n14: Category       15: Category talk\n100: Portal       101: Portal talk\n118: Draft       119: Draft talk\n828: Module       829: Module talk\n2600: Topic\n详见 zh.wikipedia.org/wiki/WP:NS",
     "set_ns_prompt": "使用 /set_ns 名字空间编号1 名字空间编号2 ... 设定需要推送的名字空间",
     "set_ns_succ": "已设定推送以下名字空间的新页面：\n",
-    "set_ns_failed": "所设定的名字空间皆无效。"
+    "set_ns_failed": "所设定的名字空间皆无效。",
+    "block_prompt": "命令格式：/block 用户ID 用户ID ...",
+    "block_failed": "未能新增禁止私聊的用户ID，用户ID错误或所指定的用户已在禁止列表中。",
+    "block_succ": "下列用户已被禁止私聊：\n",
+    "list_block_empty": "没有被禁止私聊的用户。",
+    "unblock_prompt": "命令格式：/unblock 用户ID 用户ID ...",
+    "unblock_succ": "已允许以下用户发送私聊讯息：\n",
+    "unblock_failed": "未能解除禁聊，所指定的消息ID不在禁止私聊列表中。"
   }
 }
