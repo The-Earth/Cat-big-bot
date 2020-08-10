@@ -26,9 +26,15 @@ def new_pages():
             user = change['performer']['user_text']
 
             try:
-                new_pages_rec = json.load(open(config['new_pages_rec'], 'r', encoding='utf-8'))
+                new_pages_rec = json.load(open(config['record'], 'r', encoding='utf-8'))['new_pages']
             except FileNotFoundError:
-                json.dump({}, open(config['new_pages_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+                json.dump({'new_pages': {}}, open(config['record'], 'w', encoding='utf-8'), indent=2,
+                          ensure_ascii=False)
+                continue
+            except KeyError:
+                rec = json.load(open(config['record'], 'r', encoding='utf-8'))
+                rec['new_pages'] = {}
+                json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
                 continue
 
             for chat_id in new_pages_rec.keys():
