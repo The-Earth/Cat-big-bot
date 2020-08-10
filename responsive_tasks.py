@@ -51,6 +51,22 @@ def trusted(func):
     return wrapper
 
 
+def blocked(func):
+    """
+    Similar to trusted(), block messages from those who are in the "blocked" list.
+    """
+
+    def wrapper(*args, **kwargs):
+        blocked_list = record_empty_test('blocked', list)[0]
+        msg: catbot.Message = args[0]
+        if msg.from_.id in blocked_list:
+            return False
+
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
 def get_user_id_cri(msg: catbot.Message) -> bool:
     return command_detector('/user_id', msg)
 
@@ -71,6 +87,7 @@ def get_chat_id(msg: catbot.Message):
     bot.send_message(chat_id=msg.chat.id, text=msg.chat.id, reply_to_message_id=msg.id)
 
 
+@blocked
 def pass_on_cri(msg: catbot.Message) -> bool:
     return command_detector('/pass', msg) and msg.chat.type == 'private'
 
@@ -489,18 +506,6 @@ def unblock_private(msg: catbot.Message):
         bot.send_message(config['operator_id'], text=resp_text, reply_to_message_id=msg.id)
 
 
-def delete_blocked_private_cri(msg: catbot.Message) -> bool:
-    blocked_list = record_empty_test('blocked', list)[0]
-    return msg.chat.id in blocked_list
-
-
-def delete_blocked_private(msg: catbot.Message):
-    try:
-        bot.api('deleteMessage', data={'chat_id': msg.chat.id, 'message_id': msg.id})
-    except catbot.APIError:
-        pass
-
-
 if __name__ == '__main__':
     bot.add_task(get_user_id_cri, get_user_id)
     bot.add_task(get_chat_id_cri, get_chat_id)
@@ -521,7 +526,6 @@ if __name__ == '__main__':
     bot.add_task(block_private_cri, block_private)
     bot.add_task(list_block_private_cri, list_block_private)
     bot.add_task(unblock_private_cri, unblock_private)
-    bot.add_task(delete_blocked_private_cri, delete_blocked_private)
 
     while True:
         try:
