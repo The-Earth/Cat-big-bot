@@ -16,6 +16,21 @@ def command_detector(cmd: str, msg: catbot.Message) -> bool:
         return False
 
 
+def record_empty_test(key: str, data_type):
+    try:
+        rec = json.load(open(config['record'], 'r', encoding='utf-8'))
+    except FileNotFoundError:
+        record_list, rec = data_type(), {}
+        json.dump({key: record_list}, open(config['record'], 'r', encoding='utf-8'), indent=2, ensure_ascii=False)
+    else:
+        if key in rec.keys():
+            record_list = rec[key]
+        else:
+            record_list = data_type()
+
+    return record_list, rec
+
+
 def trusted(func):
     """
     Decorate criteria functions. Decorated functions return False if the user who sent the message is not listed in
@@ -24,12 +39,9 @@ def trusted(func):
     positional argument of the decorated function should be a catbot.Message() object, which is created from the update
     stream.
     """
+
     def wrapper(*args, **kwargs):
-        try:
-            trusted_list: list = json.load(open(config['trusted_rec'], 'r', encoding='utf-8'))
-        except FileNotFoundError:
-            json.dump([], open(config['trusted_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
-            return False
+        trusted_list = record_empty_test('trusted', list)[0]
         msg: catbot.Message = args[0]
         if msg.from_.id not in trusted_list and msg.from_.id != config['operator_id']:
             return False
@@ -115,13 +127,9 @@ def mark_cri(msg: catbot.Message) -> bool:
 
 
 def mark(msg: catbot.Message):
-    try:
-        mark_rec = json.load(open(config['mark_rec'], 'r', encoding='utf-8'))
-    except FileNotFoundError:
-        mark_rec = {}
+    mark_rec, rec = record_empty_test('mark', dict)
 
-    chat_link = msg.chat.link
-    if chat_link == '':
+    if msg.chat.link == '':
         bot.send_message(msg.chat.id, text=config['messages']['mark_private'], reply_to_message_id=msg.id)
         return
     if not msg.reply:
@@ -135,7 +143,8 @@ def mark(msg: catbot.Message):
         mark_rec[str(msg.chat.id)] = [{'id': reply_to_id, 'comment': comment}]
     else:
         mark_rec[str(msg.chat.id)].append({'id': reply_to_id, 'comment': comment})
-    json.dump(mark_rec, open(config['mark_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+    rec['mark'] = mark_rec
+    json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
     bot.send_message(msg.chat.id, text=config['messages']['mark_succ'], reply_to_message_id=msg.id)
 
 
@@ -144,11 +153,7 @@ def list_marked_cri(msg: catbot.Message) -> bool:
 
 
 def list_marked(msg: catbot.Message):
-    try:
-        mark_rec = json.load(open(config['mark_rec'], 'r', encoding='utf-8'))
-    except FileNotFoundError:
-        json.dump({}, open(config['mark_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
-        mark_rec = json.load(open(config['mark_rec'], 'r', encoding='utf-8'))
+    mark_rec, rec = record_empty_test('mark', dict)
 
     if msg.chat.link == '':
         bot.send_message(msg.chat.id, text=config['messages']['mark_private'], reply_to_message_id=msg.id)
@@ -169,11 +174,7 @@ def unmark_cri(msg: catbot.Message) -> bool:
 
 
 def unmark(msg: catbot.Message):
-    try:
-        mark_rec = json.load(open(config['mark_rec'], 'r', encoding='utf-8'))
-    except FileNotFoundError:
-        json.dump({}, open(config['mark_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
-        mark_rec = json.load(open(config['mark_rec'], 'r', encoding='utf-8'))
+    mark_rec, rec = record_empty_test('mark', dict)
 
     if msg.chat.link == '':
         bot.send_message(msg.chat.id, text=config['messages']['mark_private'], reply_to_message_id=msg.id)
@@ -203,7 +204,8 @@ def unmark(msg: catbot.Message):
         if mark_rec[str(msg.chat.id)][i]['id'] in unmark_list:
             unmarked_id = mark_rec[str(msg.chat.id)][i]['id']
             mark_rec[str(msg.chat.id)].pop(i)
-            json.dump(mark_rec, open(config['mark_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+            rec['mark'] = mark_rec
+            json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
             response_text += str(unmarked_id) + '\n'
         else:
             i += 1
@@ -220,10 +222,7 @@ def set_trusted_cri(msg: catbot.Message) -> bool:
 
 
 def set_trusted(msg: catbot.Message):
-    try:
-        trusted_list: list = json.load(open(config['trusted_rec'], 'r', encoding='utf-8'))
-    except FileNotFoundError:
-        trusted_list = []
+    trusted_list, rec = record_empty_test('trusted', list)
 
     new_trusted_id = []
     if msg.reply:
@@ -251,7 +250,8 @@ def set_trusted(msg: catbot.Message):
         for item in delta:
             reply_text += str(item) + '\n'
 
-        json.dump(list(trusted_set), open(config['trusted_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+        rec['trusted'] = list(trusted_set)
+        json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
         bot.send_message(msg.chat.id, text=reply_text, reply_to_message_id=msg.id)
 
 
@@ -261,12 +261,7 @@ def list_trusted_cri(msg: catbot.Message) -> bool:
 
 
 def list_trusted(msg: catbot.Message):
-    try:
-        trusted_list: list = json.load(open(config['trusted_rec'], 'r', encoding='utf-8'))
-    except FileNotFoundError:
-        json.dump([], open(config['trusted_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
-        bot.send_message(msg.chat.id, text=config['messages']['list_trusted_empty'], reply_to_message_id=msg.id)
-        return
+    trusted_list, rec = record_empty_test('trusted', list)
 
     resp_list = []
     bot.send_message(msg.chat.id, text=config['messages']['list_trusted_pre'], reply_to_message_id=msg.id)
@@ -338,17 +333,15 @@ def start_new_pages_cri(msg: catbot.Message) -> bool:
 
 
 def start_new_pages(msg: catbot.Message):
-    try:
-        new_pages_rec = json.load(open(config['new_pages_rec'], 'r', encoding='utf-8'))
-    except FileNotFoundError:
-        new_pages_rec = {}
+    new_pages_rec, rec = record_empty_test('new_pages', list)
 
     if str(msg.chat.id) in new_pages_rec.keys():
         new_pages_rec[str(msg.chat.id)]['enable'] = True
     else:
         new_pages_rec[str(msg.chat.id)] = {'enable': True, 'ns': []}
 
-    json.dump(new_pages_rec, open(config['new_pages_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+    rec['new_pages'] = new_pages_rec
+    json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
     bot.send_message(msg.chat.id,
                      text=config['messages']['start_new_pages_succ'].format(ns=new_pages_rec[str(msg.chat.id)]["ns"]),
                      reply_to_message_id=msg.id)
@@ -359,17 +352,15 @@ def stop_new_pages_cri(msg: catbot.Message) -> bool:
 
 
 def stop_new_pages(msg: catbot.Message):
-    try:
-        new_pages_rec = json.load(open(config['new_pages_rec'], 'r', encoding='utf-8'))
-    except FileNotFoundError:
-        new_pages_rec = {}
+    new_pages_rec, rec = record_empty_test('new_pages', list)
 
     if str(msg.chat.id) in new_pages_rec.keys():
         new_pages_rec[str(msg.chat.id)]['enable'] = False
     else:
         new_pages_rec[str(msg.chat.id)] = {'enable': False, 'ns': []}
 
-    json.dump(new_pages_rec, open(config['new_pages_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+    rec['new_pages'] = new_pages_rec
+    json.dump(rec, open(config['new_pages_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
     bot.send_message(msg.chat.id, text=config['messages']['stop_new_pages_succ'], reply_to_message_id=msg.id)
 
 
@@ -386,10 +377,7 @@ def set_ns_cri(msg: catbot.Message) -> bool:
 
 
 def set_ns(msg: catbot.Message):
-    try:
-        new_pages_rec = json.load(open(config['new_pages_rec'], 'r', encoding='utf-8'))
-    except FileNotFoundError:
-        new_pages_rec = {}
+    new_pages_rec, rec = record_empty_test('new_pages', list)
 
     user_input_token = msg.text.split(' ')
     if len(user_input_token) == 1:
@@ -415,7 +403,8 @@ def set_ns(msg: catbot.Message):
         for item in ns:
             resp_text += str(item) + ', '
         resp_text = resp_text.rstrip(', ')
-        json.dump(new_pages_rec, open(config['new_pages_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+        rec['new_pages'] = new_pages_rec
+        json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
         bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id)
 
 
