@@ -21,7 +21,7 @@ def record_empty_test(key: str, data_type):
         rec = json.load(open(config['record'], 'r', encoding='utf-8'))
     except FileNotFoundError:
         record_list, rec = data_type(), {}
-        json.dump({key: record_list}, open(config['record'], 'r', encoding='utf-8'), indent=2, ensure_ascii=False)
+        json.dump({key: record_list}, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
     else:
         if key in rec.keys():
             record_list = rec[key]
