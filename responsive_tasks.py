@@ -346,7 +346,7 @@ def get_permalink(msg: catbot.Message):
 
 
 def start_new_pages_cri(msg: catbot.Message) -> bool:
-    return command_detector('/start_new_pages', msg) and msg.chat.type != 'private'
+    return command_detector('/start_new_pages', msg)
 
 
 def start_new_pages(msg: catbot.Message):
@@ -365,7 +365,7 @@ def start_new_pages(msg: catbot.Message):
 
 
 def stop_new_pages_cri(msg: catbot.Message) -> bool:
-    return command_detector('/stop_new_pages', msg) and msg.chat.type != 'private'
+    return command_detector('/stop_new_pages', msg)
 
 
 def stop_new_pages(msg: catbot.Message):
