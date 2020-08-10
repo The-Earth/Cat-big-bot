@@ -21,7 +21,6 @@
     ],
     "private": [
       "/pass 在此命令后附加您想对主人说的话，这些话将被发送到主人那里",
-      "/reply 主人使用此命令回复消息",
       "/permalink 尝试获取指定 ID 的用户的永久链接"
     ]
   },
@@ -47,7 +46,7 @@
     "list_trusted_pre": "执行时间较长，请耐心等待",
     "list_trusted_succ": "此群中被本机器人信任的用户：",
     "list_trusted_empty": "此群无本机器人信任的用户。",
-    "permalink_prompt": "命令格式：/permalink 用户ID 用户ID",
+    "permalink_prompt": "命令格式：/permalink 用户ID 用户ID ...",
     "start_new_pages_succ": "已启用来自中文维基百科的新页面推送，名字空间：{ns}。使用 /set_ns 设置需要推送的名字空间。名字空间列表见 /list_ns",
     "stop_new_pages_succ": "已停止新页面推送。",
     "list_ns": "-1: 全部\n0: 条目       1: Talk\n2: User       3: User talk\n4: Wikipedia       5: Wikipedia talk\n6: File       7: File talk\n8: MediaWiki       9: MediaWiki talk\n10: Template        11: Template talk\n12: Help       13: Help talk\n14: Category       15: Category talk\n100: Portal       101: Portal talk\n118: Draft       119: Draft talk\n828: Module       829: Module talk\n2600: Topic\n详见 zh.wikipedia.org/wiki/WP:NS",

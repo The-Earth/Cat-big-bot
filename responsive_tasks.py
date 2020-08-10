@@ -289,7 +289,7 @@ def bot_help_cri(msg: catbot.Message) -> bool:
     if msg.chat.type == 'private':
         return command_detector('/help', msg)
     else:
-        trusted_list = json.load(open(config['trusted_rec'], 'r', encoding='utf-8'))
+        trusted_list = record_empty_test('trusted', list)[0]
         if msg.from_.id not in trusted_list and msg.from_.id != config['operator_id']:
             return False
 
