@@ -377,7 +377,7 @@ def stop_new_pages(msg: catbot.Message):
         new_pages_rec[str(msg.chat.id)] = {'enable': False, 'ns': []}
 
     rec['new_pages'] = new_pages_rec
-    json.dump(rec, open(config['new_pages_rec'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+    json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
     bot.send_message(msg.chat.id, text=config['messages']['stop_new_pages_succ'], reply_to_message_id=msg.id)
 
 
