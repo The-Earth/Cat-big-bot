@@ -44,7 +44,7 @@ class Bot(User):
         self.tasks = []
 
     def api(self, action: str, data: dict):
-        resp = requests.post(self.base_url + action, data=data, **self.proxy_kw).json()
+        resp = requests.post(self.base_url + action, json=data, **self.proxy_kw).json()
         if not resp['ok']:
             raise APIError(f'API request "{action}" failed. {resp["description"]}')
 
