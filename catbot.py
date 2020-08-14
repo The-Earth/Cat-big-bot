@@ -101,12 +101,11 @@ class Bot(User):
 
                 elif 'callback_query' in item.keys():
                     query = CallbackQuery(item['callback_query'])
-                    if not hasattr(query, 'message'):
+                    if not hasattr(query, 'msg'):
                         continue
                     for criteria, action, action_kw in self.query_tasks:
                         if criteria(query):
                             threading.Thread(target=action, args=(query,), kwargs=action_kw).start()
-
 
                 else:
                     continue
@@ -353,10 +352,10 @@ class CallbackQuery:
         self.raw = query_json
         self.id: str = query_json['id']
         self.from_ = User(query_json['from'])
-        if 'message' in query_json.keys():
-            self.message = Message(query_json['message'])
+        if 'message' not in query_json.keys():
+            self.msg = None
         else:
-            self.message = None
+            self.msg = Message(query_json['message'])
         self.chat_instance: str = query_json['chat_instance']
         if 'data' in query_json.keys():
             self.data: str = query_json['data']
