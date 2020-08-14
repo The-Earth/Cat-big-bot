@@ -35,14 +35,14 @@ def trusted(func):
     """
     Decorate criteria functions. Decorated functions return False if the user who sent the message is not listed in
     trusted user list, which is defined in config['trusted_rec']. That means, only trusted users are allowed to perform
-    decorated operations. Requests from other users are ignored. As defined in catbot.Bot.add_task(), the first
-    positional argument of the decorated function should be a catbot.Message() object, which is created from the update
-    stream.
+    decorated operations. Requests from other users are ignored. As defined in catbot.Bot.add_msg_task() and
+    catbot.Bot.add_query_task, the first positional argument of the decorated function should be a catbot.Message()
+    object, which is created from the update stream.
     """
 
     def wrapper(*args, **kwargs):
         trusted_list = record_empty_test('trusted', list)[0]
-        msg: catbot.Message = args[0]
+        msg = args[0]  # might be Message or CallbackQuery, both of which have the "from_" attr
         if msg.from_.id not in trusted_list and msg.from_.id != config['operator_id']:
             return False
 
@@ -58,7 +58,7 @@ def blocked(func):
 
     def wrapper(*args, **kwargs):
         blocked_list = record_empty_test('blocked', list)[0]
-        msg: catbot.Message = args[0]
+        msg = args[0]
         if msg.from_.id in blocked_list:
             return False
 
@@ -507,25 +507,25 @@ def unblock_private(msg: catbot.Message):
 
 
 if __name__ == '__main__':
-    bot.add_task(get_user_id_cri, get_user_id)
-    bot.add_task(get_chat_id_cri, get_chat_id)
-    bot.add_task(pass_on_cri, pass_on)
-    bot.add_task(reply_cri, reply)
-    bot.add_task(start_cri, start)
-    bot.add_task(mark_cri, mark)
-    bot.add_task(list_marked_cri, list_marked)
-    bot.add_task(unmark_cri, unmark)
-    bot.add_task(set_trusted_cri, set_trusted)
-    bot.add_task(list_trusted_cri, list_trusted)
-    bot.add_task(bot_help_cri, bot_help)
-    bot.add_task(get_permalink_cri, get_permalink)
-    bot.add_task(list_ns_cri, list_ns)
-    bot.add_task(start_new_pages_cri, start_new_pages)
-    bot.add_task(stop_new_pages_cri, stop_new_pages)
-    bot.add_task(set_ns_cri, set_ns)
-    bot.add_task(block_private_cri, block_private)
-    bot.add_task(list_block_private_cri, list_block_private)
-    bot.add_task(unblock_private_cri, unblock_private)
+    bot.add_msg_task(get_user_id_cri, get_user_id)
+    bot.add_msg_task(get_chat_id_cri, get_chat_id)
+    bot.add_msg_task(pass_on_cri, pass_on)
+    bot.add_msg_task(reply_cri, reply)
+    bot.add_msg_task(start_cri, start)
+    bot.add_msg_task(mark_cri, mark)
+    bot.add_msg_task(list_marked_cri, list_marked)
+    bot.add_msg_task(unmark_cri, unmark)
+    bot.add_msg_task(set_trusted_cri, set_trusted)
+    bot.add_msg_task(list_trusted_cri, list_trusted)
+    bot.add_msg_task(bot_help_cri, bot_help)
+    bot.add_msg_task(get_permalink_cri, get_permalink)
+    bot.add_msg_task(list_ns_cri, list_ns)
+    bot.add_msg_task(start_new_pages_cri, start_new_pages)
+    bot.add_msg_task(stop_new_pages_cri, stop_new_pages)
+    bot.add_msg_task(set_ns_cri, set_ns)
+    bot.add_msg_task(block_private_cri, block_private)
+    bot.add_msg_task(list_block_private_cri, list_block_private)
+    bot.add_msg_task(unblock_private_cri, unblock_private)
 
     while True:
         try:

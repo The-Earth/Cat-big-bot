@@ -1,4 +1,5 @@
 import threading
+from typing import List, Dict
 
 import requests
 
@@ -41,7 +42,8 @@ class Bot(User):
         self.can_read_all_group_messages: bool = get_me_resp['result']['can_read_all_group_messages']
         self.supports_inline_queries: bool = get_me_resp['result']['supports_inline_queries']
 
-        self.tasks = []
+        self.msg_tasks = []
+        self.query_tasks = []
 
     def api(self, action: str, data: dict):
         resp = requests.post(self.base_url + action, json=data, **self.proxy_kw).json()
@@ -57,8 +59,9 @@ class Bot(User):
         print(updates)
         return updates
 
-    def add_task(self, criteria, action, **action_kw):
+    def add_msg_task(self, criteria, action, **action_kw):
         """
+        Add tasks for the bot to process. For message updates only. Use add_query_task for callback query updates.
         :param criteria:
             A function that lead flow of program into "action" function. It should take a Message-like object as the
             only argument and returns a bool. When it returns True, "action" will be executed. An example is to return
@@ -71,7 +74,14 @@ class Bot(User):
             Keyword arguments that will be passed to action when it is called.
         :return:
         """
-        self.tasks.append((criteria, action, action_kw))
+        self.msg_tasks.append((criteria, action, action_kw))
+
+    def add_query_task(self, criteria, action, **action_kw):
+        """
+        Similar to add_msg_task, which add criteria and action for callback queries, typically clicks from
+        in-message buttons (I would like to call them in-message instead of inline, which is used by Telegram).
+        """
+        self.query_tasks.append((criteria, action, action_kw))
 
     def start(self):
         update_offset = 0
@@ -79,19 +89,27 @@ class Bot(User):
             updates = self.get_updates(update_offset)
             for item in updates:
                 update_offset = item['update_id'] + 1
-                if 'message' in item.keys():
-                    msg = Message(item['message'])
-                elif 'edited_message' in item.keys():
-                    msg = Message(item['edited_message'])
+                if 'message' in item.keys() or 'edited_message' in item.keys():
+                    msg_type = 'message' if 'message' in item.keys() else 'edited_message'
+                    msg = Message(item[msg_type])
+                    for criteria, action, action_kw in self.msg_tasks:
+                        if criteria(msg):
+                            try:
+                                threading.Thread(target=action, args=(msg,), kwargs=action_kw).start()
+                            except APIError as e:  # Exception handling here might be useless
+                                print(e.args[0])
+
+                elif 'callback_query' in item.keys():
+                    query = CallbackQuery(item['callback_query'])
+                    if not hasattr(query, 'message'):
+                        continue
+                    for criteria, action, action_kw in self.query_tasks:
+                        if criteria(query):
+                            threading.Thread(target=action, args=(query,), kwargs=action_kw).start()
+
+
                 else:
                     continue
-
-                for criteria, action, action_kw in self.tasks:
-                    if criteria(msg):
-                        try:
-                            threading.Thread(target=action, args=(msg,), kwargs=action_kw).start()
-                        except APIError as e:  # Exception handling here might be useless
-                            print(e.args[0])
 
     def send_message(self, chat_id, **kw):
         """
@@ -106,10 +124,19 @@ class Bot(User):
                 - reply_to_message_id: Optional. If the message is a reply, ID of the original message.
             For plain text messages:
                 - text: Text of the message to be sent, 1-4096 characters after entities parsing.
+                - reply_markup: Additional interface options. A JSON-serialized object for an inline keyboard,
+                                custom reply keyboard, instructions to remove reply keyboard or to force a reply
+                                from the user. A common content of this param is an InlineKeyboard object.
         :return:
         """
+        if 'reply_markup' in kw.keys():
+            kw['reply_markup'] = kw['reply_markup'].parse()
+
         msg_kw = {'chat_id': chat_id, **kw}
         return self.api('sendMessage', msg_kw)
+
+    def answer_callback_query(self, callback_query_id, **kwargs):
+        self.api('answerCallbackQuery', {'callback_query_id': callback_query_id, **kwargs})
 
     def get_chat(self, chat_id: int):
         try:
@@ -273,6 +300,68 @@ class Message:
             self.dice_value = msg_json['dice']['value']
         else:
             self.dice = False
+
+    def __str__(self):
+        return self.raw
+
+
+class InlineKeyboardButton:
+    def __init__(self, text: str, **kwargs):
+        """
+        :param text: Text showed on the button.
+        :param kwargs: Other optional params defined in Telegram bot api.
+                       See https://core.telegram.org/bots/api#inlinekeyboardbutton
+            - url: Optional. HTTP or tg:// url to be opened when button is pressed
+            - callback_data: Optional. Data to be sent in a callback query to the bot when button is pressed, 1-64 bytes
+        """
+        self.text = text
+        if len(kwargs) == 0:
+            raise APIError('Inline keyboard button must have either url or calback_data.')
+        if 'url' in kwargs.keys():
+            self.url = kwargs['url']
+        if 'callback_data' in kwargs.keys():
+            self.callback_data = kwargs['callback_data']
+
+    def parse(self) -> dict:
+        """
+        :return: self.__dict__ for follow up usage like json serialization.
+        """
+        return self.__dict__
+
+
+class InlineKeyboard:
+    def __init__(self, key_list: List[List[InlineKeyboardButton]]):
+        """
+        :param key_list: Use InlineKeyBoardButton to structure the buttons you want and pass it into this
+                         initializer. Each sublist represent a row. Buttons in the same sublist will be
+                         placed in the same row.
+        """
+        self.key_list = key_list
+
+    def parse(self) -> Dict[str, List[List[Dict]]]:
+        key_list: List[List[dict]] = []
+        for i in range(len(self.key_list)):
+            key_list.append([])
+            for j in range(len(self.key_list[i])):
+                key_list[i].append(self.key_list[i][j].parse())
+
+        return {'inline_keyboard': key_list}
+
+
+class CallbackQuery:
+    def __init__(self, query_json: dict):
+        self.raw = query_json
+        self.id: str = query_json['id']
+        self.from_ = User(query_json['from'])
+        if 'message' in query_json.keys():
+            self.message = Message(query_json['message'])
+        else:
+            self.message = None
+        self.chat_instance: str = query_json['chat_instance']
+        if 'data' in query_json.keys():
+            self.data: str = query_json['data']
+        else:
+            self.data = ''
 
     def __str__(self):
         return self.raw
