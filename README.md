@@ -8,9 +8,9 @@ t.me/CatBigBot
         * `/user_id`
         * `/mark`
         * `/list_marked`
-        * `/list_ns`
         * `/start_new_pages`
         * `/set_ns`
+        * `/list_ns`
         * `/stop_new_pages`
     * 于私聊中可以使用：
         * `/start`
@@ -18,11 +18,11 @@ t.me/CatBigBot
         * `/user_id`
         * `/start_new_pages`
         * `/set_ns`
+        * `/list_ns`
         * `/stop_new_pages`
         * `/help`
         * `/pass`
         * `/permalink`
-
 * trusted 用户
     * 可以使用所有用户均可使用的指令
     * 于群组中可以使用：
