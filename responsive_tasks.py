@@ -1,11 +1,8 @@
 from responsive.mark import *
 from responsive.misc import *
-from responsive.trusted_user import *
 from responsive.new_pages import *
 from responsive.pm import *
-
-from responsive import bot
-
+from responsive.trusted_user import *
 
 bot.add_msg_task(get_user_id_cri, get_user_id)
 bot.add_msg_task(get_chat_id_cri, get_chat_id)
@@ -26,7 +23,6 @@ bot.add_msg_task(set_ns_cri, set_ns)
 bot.add_msg_task(block_private_cri, block_private)
 bot.add_msg_task(list_block_private_cri, list_block_private)
 bot.add_msg_task(unblock_private_cri, unblock_private)
-# bot.add_query_task(button_counter_cri, button_counter)
 
 while True:
     try:
