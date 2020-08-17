@@ -134,6 +134,19 @@ class Bot(User):
         msg_kw = {'chat_id': chat_id, **kw}
         return self.api('sendMessage', msg_kw)
 
+    def edit_message(self, chat_id, msg_id, **kw):
+        if 'reply_markup' in kw.keys():
+            kw['reply_markup'] = kw['reply_markup'].parse()
+
+        msg_kw = {'chat_id': chat_id, 'message_id': msg_id, **kw}
+        try:
+            return self.api('editMessageText', msg_kw)
+        except APIError as e:
+            if 'message is not modified' in e.args[0]:
+                pass
+            else:
+                raise
+
     def answer_callback_query(self, callback_query_id, **kwargs):
         self.api('answerCallbackQuery', {'callback_query_id': callback_query_id, **kwargs})
 
