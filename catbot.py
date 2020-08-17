@@ -300,6 +300,9 @@ class Message:
         else:
             self.dice = False
 
+        if 'reply_markup' in msg_json.keys():
+            self.reply_markup: InlineKeyboard = InlineKeyboard.from_json(msg_json['reply_markup'])
+
     def __str__(self):
         return self.raw
 
@@ -321,6 +324,10 @@ class InlineKeyboardButton:
         if 'callback_data' in kwargs.keys():
             self.callback_data = kwargs['callback_data']
 
+    @classmethod
+    def from_json(cls, button_json: dict):
+        return cls(**button_json)
+
     def parse(self) -> dict:
         """
         :return: self.__dict__ for follow up usage like json serialization.
@@ -336,6 +343,17 @@ class InlineKeyboard:
                          placed in the same row.
         """
         self.key_list = key_list
+
+    @classmethod
+    def from_json(cls, markup_json: dict):
+        markup_list: List[List[dict]] = markup_json['inline_keyboard']
+        key_list: List[List[InlineKeyboardButton]] = []
+        for i in range(len(markup_json)):
+            key_list.append([])
+            for j in range(len(markup_json)):
+                key_list[i].append(InlineKeyboardButton.from_json(markup_list[i][j]))
+
+        return cls(key_list)
 
     def parse(self) -> Dict[str, List[List[Dict]]]:
         key_list: List[List[dict]] = []
