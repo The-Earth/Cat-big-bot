@@ -147,8 +147,8 @@ class Bot(User):
             else:
                 raise
 
-    def answer_callback_query(self, callback_query_id, **kwargs):
-        self.api('answerCallbackQuery', {'callback_query_id': callback_query_id, **kwargs})
+    def answer_callback_query(self, callback_query_id, **kwargs) -> bool:
+        return self.api('answerCallbackQuery', {'callback_query_id': callback_query_id, **kwargs})
 
     def get_chat(self, chat_id: int):
         try:
@@ -392,6 +392,10 @@ class CallbackQuery:
             self.data: str = query_json['data']
         else:
             self.data = ''
+        if 'inline_message_id' in query_json.keys():
+            self.inline_message_id: str = query_json['inline_message_id']
+        else:
+            self.inline_message_id = ''
 
     def __str__(self):
         return self.raw
