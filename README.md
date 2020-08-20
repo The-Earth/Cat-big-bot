@@ -37,17 +37,28 @@ t.me/CatBigBot
     * 无法使用：
         * `/pass`
 * admin 用户
-    * （即将出现）
+    * 可以使用 trusted 用户可使用的指令
+    * 于群组中可以使用：
+        * `/set_voter`
+        * `/list_voter`
+        * `/unset_voter`
+    * 于私聊中可以使用：
+        * `/set_voter`
+        * `/unset_voter`
 * voter 用户
     * （即将出现）
 * operator （机器人操作者）
-    * 可以使用所有用户均可使用的指令”
+    * 可以使用所有用户均可使用的指令
     * 可以使用 trusted 用户可使用的指令
+    * 可以使用 admin 用户可使用的指令
+    * 于群组中可以使用：
+        * `/set_admin`
     * 于私聊中可以使用：
         * `/reply`
         * `/block`
         * `/unblock`
         * `/list_blocked`
+        * `/set_admin`
 
 ## 指令
 
@@ -56,7 +67,7 @@ t.me/CatBigBot
 查看他人或自己的 ID，使用方法：
 
 * 查看自己的 ID：直接发送 `/user_id`
-* 查看他人的 ID：回复想被获取ID者发出的消息，内容为 `/user_id`
+* 查看他人的 ID：回复被获取ID者发出的消息，内容为 `/user_id`
 
 ### /chat_id
 
