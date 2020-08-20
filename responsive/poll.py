@@ -1,11 +1,13 @@
-from poll import Poll
-
 import json
+import time
+
+import parsedatetime
 
 import catbot
+from poll import Poll
+from responsive import admin
 from responsive import bot, config
 from responsive import record_empty_test, command_detector
-from responsive import admin
 
 
 @admin
@@ -110,3 +112,77 @@ def unset_voter(msg: catbot.Message):
         json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
         resp_text = config['messages']['unset_voter_succ'] + '\n'.join(rm_voter_list)
         bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id)
+
+
+@admin
+def init_poll_cri(msg: catbot.Message) -> bool:
+    return command_detector('/init_poll', msg) and msg.chat.type != 'private'
+
+
+def init_poll(msg: catbot.Message):
+    poll_list, rec = record_empty_test('poll', list)
+    user_input_token = msg.text.split()
+    if len(user_input_token) == 1:
+        bot.send_message(msg.chat.id, text=config['messages']['init_poll_failed'], reply_to_message_id=msg.id)
+        return
+    p = Poll(msg.chat.id, msg.id)
+
+    i = 0
+    parser = parsedatetime.Calendar()
+    while i < len(user_input_token):
+        if user_input_token[i] == '-n':
+            p.title = user_input_token[i + 1]
+            i += 2
+            continue
+        if user_input_token[i] == '-t':
+            i += 1
+            t_list = []
+            while i < len(user_input_token) and not user_input_token[i].startswith('-'):
+                t_list.append(user_input_token[i])
+                i += 1
+            t_str = ' '.join(t_list)
+            p.last_time = time.mktime(parser.parse(datetimeString=t_str)[0]) - time.time()
+            p.readable_time = t_str
+            continue
+        if user_input_token[i] == '-o':
+            i += 1
+            options = []
+            while i < len(user_input_token) and not user_input_token[i].startswith('-'):
+                options.append(user_input_token[i])
+                i += 1
+            p.set_option(options)
+            continue
+        if user_input_token[i] == '-ao':
+            p.anonymous_open = True
+            i += 1
+            continue
+        if user_input_token[i] == '-ac':
+            p.anonymous_closed = True
+            i += 1
+            continue
+        if user_input_token[i] == '-c':
+            p.count_open = True
+            i += 1
+            continue
+        if user_input_token[i] == '-m':
+            p.multiple = True
+            i += 1
+            continue
+        # format error
+        bot.send_message(msg.chat.id, text=config['messages']['init_poll_failed'], reply_to_message_id=msg.id)
+        return
+
+    if len(p.option_list) == 0:
+        bot.send_message(msg.chat.id, text=config['messages']['init_poll_failed'], reply_to_message_id=msg.id)
+        return
+
+    poll_list.append(p.to_json())
+    rec['poll'] = poll_list
+    json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+    resp_text = config['messages']['init_poll_succ'].format(poll_id=f'{p.chat_id}_{p.id_}',
+                                                            last=p.readable_time,
+                                                            anon_open=p.anonymous_open,
+                                                            anon_closed=p.anonymous_closed,
+                                                            count_open=p.count_open,
+                                                            multiple=p.multiple)
+    bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id)

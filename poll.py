@@ -3,18 +3,19 @@ import time
 
 
 class Poll:
-    def __init__(self, chat_id, id_):
+    def __init__(self, chat_id: int, id_: int):
         self.title = ''
         self.option_list: List[dict] = []
         self.open = False
         self.start_time = 0
         self.last_time = 0
+        self.readable_time = ''
         # if anonymous when the poll is open
         self.anonymous_open = False
         # if anonymous when the poll is closed
         self.anonymous_closed = False
         # if count of each option is available when the poll is open
-        self.count_open = True
+        self.count_open = False
         # if the poll allows multiple choices
         self.multiple = False
         self.id_ = id_
@@ -35,7 +36,7 @@ class Poll:
         if self.open:
             return
         for i in range(len(op_list)):
-            self.option_list.append({'id': f'{self.id_}_{i}', 'text': op_list[i], 'user': []})
+            self.option_list.append({'text': op_list[i], 'user': []})
 
     def vote(self, user_id: int, option_id: int):
         if not self.open:

@@ -70,6 +70,8 @@
     "unset_voter_succ": "下列用户已无投票权：\n",
     "set_admin_prompt": "用 /set_admin 回复需要列为管理员的用户，或使用 /set_admin 用户ID 用户ID ... 。",
     "set_admin_failed": "未能新增管理员，用户ID错误或所指定的用户已在管理员列表中。",
-    "set_admin_succ": "下列用户已称为管理员：\n"
+    "set_admin_succ": "下列用户已称为管理员：\n",
+    "init_poll_failed": "格式错误。启动投票的格式为：/init_poll -n [标题] -o [选项一] [选项二] ... -t [时长]\n默认设置：全程不匿名，投票期间不显示票数，单选\n可附加选项：\n-ao 投票期间匿名\n-ac 投票关闭后匿名\n-c 投票期间显示各选项票数\n-m 可多选",
+    "init_poll_succ": "投票已创建，使用 /start_poll_{poll_id} 开始投票。投票规则：\n投票时长{last}\n投票期间匿名：{anon_open}\n投票关闭后匿名：{anon_closed}\n投票期间显示票数：{count_open}\n多选：{multiple}"
   }
 }
