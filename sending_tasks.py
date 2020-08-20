@@ -24,6 +24,7 @@ def new_pages():
                 continue
             title = change['page_title']
             user = change['performer']['user_text']
+            comment = change['comment']
 
             try:
                 new_pages_rec = json.load(open(config['record'], 'r', encoding='utf-8'))['new_pages']
@@ -41,22 +42,22 @@ def new_pages():
                 if not new_pages_rec[chat_id]['enable']:
                     continue
                 if -1 in new_pages_rec[chat_id]['ns']:
-                    sending_trials(int(chat_id), title, user)
+                    sending_trials(int(chat_id), title, user, comment)
                     continue
                 if change['page_namespace'] in new_pages_rec[chat_id]['ns']:
-                    sending_trials(int(chat_id), title, user)
+                    sending_trials(int(chat_id), title, user, comment)
                     continue
 
             print(title)
 
 
-def sending_trials(chat_id: int, title: str, user: str):
+def sending_trials(chat_id: int, title: str, user: str, comment: str):
     for i in range(5):
         try:
             bot.send_message(chat_id,
                              text=f'<a href="https://zh.wikipedia.org/wiki/{title}?redirect=no">{title}</a>'
                                   f' - <a href="https://zh.wikipedia.org/wiki/Special:Contributions/{user}"'
-                                  f'>{user}</a>',
+                                  f'>{user}</a> ({comment})',
                              parse_mode='HTML')
         except catbot.APIError:
             print(f'Retrying {title} ... {i + 1}')
