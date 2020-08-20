@@ -43,7 +43,7 @@
     "set_trusted_prompt": "用 /set_trusted 回复需要设定为可信的用户，或使用 /set_trusted 用户ID 用户ID ... 。",
     "set_trusted_succ": "下列用户已被列为可信用户：\n",
     "set_trusted_failed": "未能新增可信用户ID，用户ID错误或所指定的用户已在可信列表中。",
-    "list_trusted_pre": "执行时间较长，请耐心等待",
+    "list_user_pre": "执行时间较长，请耐心等待",
     "list_trusted_succ": "此群中被本机器人信任的用户：",
     "list_trusted_empty": "此群无本机器人信任的用户。",
     "permalink_prompt": "命令格式：/permalink 用户ID 用户ID ...",
@@ -59,6 +59,17 @@
     "list_block_empty": "没有被禁止私聊的用户。",
     "unblock_prompt": "命令格式：/unblock 用户ID 用户ID ...",
     "unblock_succ": "已允许以下用户发送私聊讯息：\n",
-    "unblock_failed": "未能解除禁聊，所指定的消息ID不在禁止私聊列表中。"
+    "unblock_failed": "未能解除禁聊，所指定的消息ID不在禁止私聊列表中。",
+    "set_voter_prompt": "用 /set_voter 回复需要授予投票权的用户，或使用 /set_voter 用户ID 用户ID ... 。",
+    "set_voter_failed": "未能新增投票者，用户ID错误或所指定的用户已在投票者列表中。",
+    "set_voter_succ": "下列用户已被授予投票权：\n",
+    "list_voter_succ": "此群中有投票权的用户：",
+    "list_voter_empty": "此群无人有投票权。",
+    "unset_voter_prompt": "用 /unset_voter 回复想要取消投票权的用户，或使用 /unset_voter 用户ID。",
+    "unset_voter_failed": "未能移除投票权限，用户ID错误或所指定的用户不在投票者列表中。",
+    "unset_voter_succ": "下列用户已无投票权：\n",
+    "set_admin_prompt": "用 /set_admin 回复需要列为管理员的用户，或使用 /set_admin 用户ID 用户ID ... 。",
+    "set_admin_failed": "未能新增管理员，用户ID错误或所指定的用户已在管理员列表中。",
+    "set_admin_succ": "下列用户已称为管理员：\n"
   }
 }

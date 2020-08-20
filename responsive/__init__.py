@@ -65,3 +65,33 @@ def blocked(func):
         return func(*args, **kwargs)
 
     return wrapper
+
+
+def admin(func):
+    """
+    Similar to trusted, return False on non-admins.
+    """
+    def wrapper(*args, **kwargs):
+        admin_list = record_empty_test('admin', list)[0]
+        msg = args[0]
+        if msg.from_.id not in admin_list:
+            return False
+
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def voter(func):
+    """
+    Similar to trusted, limit vote right to voters.
+    """
+    def wrapper(*args, **kwargs):
+        voter_list = record_empty_test('admin', list)[0]
+        msg = args[0]
+        if msg.from_.id not in voter_list:
+            return False
+
+        return func(*args, **kwargs)
+
+    return wrapper
