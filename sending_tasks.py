@@ -16,15 +16,18 @@ def new_pages():
         if event.event != 'message':
             continue
         try:
-            change = json.loads(event.data)
+            change: dict = json.loads(event.data)
         except ValueError:
             continue
         else:
             if change['meta']['domain'] != 'zh.wikipedia.org':
                 continue
-            title = change['page_title']
-            user = change['performer']['user_text']
-            comment = change['comment']
+            title: str = change['page_title']
+            user: str = change['performer']['user_text']
+            if 'comment' in change.keys():
+                comment: str = change['comment']
+            else:
+                comment = ''
 
             try:
                 new_pages_rec = json.load(open(config['record'], 'r', encoding='utf-8'))['new_pages']
