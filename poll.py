@@ -33,6 +33,10 @@ class Poll:
             return
         self.open = False
 
+    @property
+    def end_time(self):
+        return self.start_time + self.last_time
+
     def set_option(self, intput_option_list: List[str]):
         if self.open:
             return
