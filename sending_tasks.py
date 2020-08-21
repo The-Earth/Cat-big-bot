@@ -43,10 +43,8 @@ def new_pages():
                     continue
                 if -1 in new_pages_rec[chat_id]['ns']:
                     sending_trials(int(chat_id), title, user, comment)
-                    continue
-                if change['page_namespace'] in new_pages_rec[chat_id]['ns']:
+                elif change['page_namespace'] in new_pages_rec[chat_id]['ns']:
                     sending_trials(int(chat_id), title, user, comment)
-                    continue
 
             print(title)
 

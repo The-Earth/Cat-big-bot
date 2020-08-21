@@ -133,8 +133,7 @@ def init_poll(msg: catbot.Message):
         if user_input_token[i] == '-n':
             p.title = user_input_token[i + 1]
             i += 2
-            continue
-        if user_input_token[i] == '-t':
+        elif user_input_token[i] == '-t':
             i += 1
             t_list = []
             while i < len(user_input_token) and not user_input_token[i].startswith('-'):
@@ -143,34 +142,28 @@ def init_poll(msg: catbot.Message):
             t_str = ' '.join(t_list)
             p.last_time = time.mktime(parser.parse(datetimeString=t_str)[0]) - time.time()
             p.readable_time = t_str
-            continue
-        if user_input_token[i] == '-o':
+        elif user_input_token[i] == '-o':
             i += 1
             options = []
             while i < len(user_input_token) and not user_input_token[i].startswith('-'):
                 options.append(user_input_token[i])
                 i += 1
             p.set_option(options)
-            continue
-        if user_input_token[i] == '-ao':
+        elif user_input_token[i] == '-ao':
             p.anonymous_open = True
             i += 1
-            continue
-        if user_input_token[i] == '-ac':
+        elif user_input_token[i] == '-ac':
             p.anonymous_closed = True
             i += 1
-            continue
-        if user_input_token[i] == '-c':
+        elif user_input_token[i] == '-c':
             p.count_open = True
             i += 1
-            continue
-        if user_input_token[i] == '-m':
+        elif user_input_token[i] == '-m':
             p.multiple = True
             i += 1
-            continue
-        # format error
-        bot.send_message(msg.chat.id, text=config['messages']['init_poll_failed'], reply_to_message_id=msg.id)
-        return
+        else:  # format error
+            bot.send_message(msg.chat.id, text=config['messages']['init_poll_failed'], reply_to_message_id=msg.id)
+            return
 
     if len(p.option_list) == 0:
         bot.send_message(msg.chat.id, text=config['messages']['init_poll_failed'], reply_to_message_id=msg.id)
