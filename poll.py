@@ -18,7 +18,8 @@ class Poll:
         self.count_open = False
         # if the poll allows multiple choices
         self.multiple = False
-        self.id_ = id_
+        self.init_id = id_
+        self.poll_id = 0
         self.chat_id = chat_id
 
     def start(self):
@@ -59,7 +60,8 @@ class Poll:
 
     @classmethod
     def from_json(cls, data: dict):
-        obj = cls(data['chat_id'], data['id_'])
+        obj = cls(data['chat_id'], data['init_id'])
+        obj.poll_id = data['poll_id']
         obj.title = data['title']
         obj.option_list = data['option_list']
         obj.open = data['open']

@@ -10,6 +10,32 @@ from responsive import bot, config
 from responsive import record_empty_test, command_detector
 
 
+def get_poll_text(p: Poll, chat_id: int):
+    start_time = time.strftime('%Y/%m/%d %H:%M:%S', time.gmtime(p.start_time))
+    end_time = time.strftime('%Y/%m/%d %H:%M:%S', time.gmtime(p.start_time + p.last_time))
+    total_votes = 0
+    for item in p.option_list:
+        total_votes += len(item['user'])
+
+    output = config['messages']['poll'].format(title=p.title, start_time=start_time, end_time=end_time,
+                                               total=total_votes)
+
+    for item in p.option_list:
+        output += f'{item["text"]}\n'
+
+        if (p.open and not p.anonymous_open) or (not p.open and p.anonymous_closed):
+            for user_id in item['user']:
+                output += f'{bot.get_chat_member(chat_id, user_id).name}\n'
+
+        if (p.open and p.count_open) or (not p.open):
+            proportion = len(item['user']) / total_votes if total_votes != 0 else 0
+            output += f'{len(item["user"])} {proportion / 100:.2f}%\n'
+
+        output += '\n'
+
+    return output
+
+
 @admin
 def set_voter_cri(msg: catbot.Message) -> bool:
     return command_detector('/set_voter', msg)
@@ -125,7 +151,8 @@ def init_poll(msg: catbot.Message):
     if len(user_input_token) == 1:
         bot.send_message(msg.chat.id, text=config['messages']['init_poll_failed'], reply_to_message_id=msg.id)
         return
-    p = Poll(msg.chat.id, msg.id)
+    poll_chat_id = int(str(msg.chat.id).replace('-100', ''))
+    p = Poll(poll_chat_id, msg.id)
 
     i = 1
     parser = parsedatetime.Calendar()
@@ -190,3 +217,55 @@ def init_poll(msg: catbot.Message):
                                                             count_open=p.count_open,
                                                             multiple=p.multiple)
     bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id)
+
+
+@admin
+def start_poll_cri(msg: catbot.Message):
+    if len(msg.commands) == 0 or not msg.text.startswith('/start_poll_'):
+        return False
+    cmd_token = msg.commands[0].split('_')
+    return len(cmd_token) == 4
+
+
+def start_poll(msg: catbot.Message):
+    poll_list, rec = record_empty_test('poll', list)
+    cmd_token = msg.commands[0].replace(f'@{bot.username}', '').split('_')
+    try:
+        cmd_chat_id = int(cmd_token[2])
+        cmd_id = int(cmd_token[3])
+    except ValueError:
+        return
+
+    if cmd_token[2] != str(msg.chat.id).replace('-100', ''):
+        bot.send_message(msg.chat.id, text=config['messages']['start_poll_not_found'], reply_to_message_id=msg.id)
+        return
+    for i in range(len(poll_list)):
+        p = Poll.from_json(poll_list[i])
+        if p.chat_id == cmd_chat_id and p.init_id == cmd_id:
+            break
+    else:
+        bot.send_message(msg.chat.id, text=config['messages']['start_poll_not_found'], reply_to_message_id=msg.id)
+        return
+
+    if p.open:
+        url = f'{msg.chat.link}/{p.poll_id}'
+        bot.send_message(msg.chat.id, text=config['messages']['start_poll_already'].format(url=url),
+                         reply_to_message_id=msg.id)
+        return
+
+    p.start()
+
+    button_list = []
+    for j in range(len(p.option_list)):
+        option = p.option_list[j]
+        button_list.append([catbot.InlineKeyboardButton(option['text'], callback_data=f'{p.chat_id}_{p.init_id}_{j}')])
+    button_list.append([catbot.InlineKeyboardButton(config['messages']['stop_poll_button'],
+                                                    callback_data=f'{p.chat_id}_{p.init_id}_stop')])
+    keyboard = catbot.InlineKeyboard(button_list)
+
+    poll_msg: catbot.Message = bot.send_message(msg.chat.id, text=get_poll_text(p, msg.chat.id), reply_markup=keyboard)
+
+    p.poll_id = poll_msg.id
+    poll_list[i] = p.to_json()
+    rec['poll'] = poll_list
+    json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
