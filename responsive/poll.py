@@ -127,12 +127,17 @@ def init_poll(msg: catbot.Message):
         return
     p = Poll(msg.chat.id, msg.id)
 
-    i = 0
+    i = 1
     parser = parsedatetime.Calendar()
     while i < len(user_input_token):
         if user_input_token[i] == '-n':
-            p.title = user_input_token[i + 1]
-            i += 2
+            i += 1
+            title_list = []
+            while i < len(user_input_token) and not user_input_token[i].startswith('-'):
+                title_list.append(user_input_token[i])
+                i += 1
+            p.title = ' '.join(title_list)
+
         elif user_input_token[i] == '-t':
             i += 1
             t_list = []
@@ -142,13 +147,18 @@ def init_poll(msg: catbot.Message):
             t_str = ' '.join(t_list)
             p.last_time = time.mktime(parser.parse(datetimeString=t_str)[0]) - time.time()
             p.readable_time = t_str
+
         elif user_input_token[i] == '-o':
             i += 1
-            options = []
+            option_text = ''
             while i < len(user_input_token) and not user_input_token[i].startswith('-'):
-                options.append(user_input_token[i])
+                option_text += user_input_token[i] + ' '
                 i += 1
+            options = option_text.split('!')
+            for j in range(options.count('')):
+                options.remove('')
             p.set_option(options)
+
         elif user_input_token[i] == '-ao':
             p.anonymous_open = True
             i += 1
@@ -173,6 +183,7 @@ def init_poll(msg: catbot.Message):
     rec['poll'] = poll_list
     json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
     resp_text = config['messages']['init_poll_succ'].format(poll_id=f'{p.chat_id}_{p.id_}',
+                                                            title=p.title,
                                                             last=p.readable_time,
                                                             anon_open=p.anonymous_open,
                                                             anon_closed=p.anonymous_closed,
