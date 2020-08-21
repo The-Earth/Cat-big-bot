@@ -32,11 +32,11 @@ class Poll:
             return
         self.open = False
 
-    def set_option(self, op_list: List[str]):
+    def set_option(self, intput_option_list: List[str]):
         if self.open:
             return
-        for i in range(len(op_list)):
-            self.option_list.append({'text': op_list[i], 'user': []})
+        for i in range(len(intput_option_list)):
+            self.option_list.append({'text': intput_option_list[i], 'user': []})
 
     def vote(self, user_id: int, option_id: int):
         if not self.open:

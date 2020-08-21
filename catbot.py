@@ -148,6 +148,20 @@ class Bot(User):
                 raise
 
     def answer_callback_query(self, callback_query_id, **kwargs) -> bool:
+        """
+        :param callback_query_id: callback_query_id you receive in callback_query
+        :param kwargs: Keyword arguments defined in Telegram bot api. You should always call this method after receiving
+                       a valid callback_query, even if you have nothing to send back to user.
+                       See https://core.telegram.org/bots/api#answercallbackquery
+               - text: Optional. Text of the notification. If not specified, nothing will be shown to the
+                       user, 0-200 characters.
+               - show_alert: Optional. If true, an alert will be shown by the client instead of a notification
+                             at the top of the chat screen. Defaults to false.
+               - cache_time: Optional. The maximum amount of time in seconds that the result of the callback
+                             query may be cached client-side. Telegram apps will support caching starting
+                             in version 3.14. Defaults to 0.
+        :return:
+        """
         return self.api('answerCallbackQuery', {'callback_query_id': callback_query_id, **kwargs})
 
     def get_chat(self, chat_id: int):
