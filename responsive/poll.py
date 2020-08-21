@@ -116,7 +116,12 @@ def unset_voter(msg: catbot.Message):
     user_input_token = msg.text.split()
     rm_voter_list = []
     if msg.reply:
-        rm_voter_list.append(msg.reply_to_message.from_.id)
+        rm_voter_list.append(str(msg.reply_to_message.from_.id))
+        if msg.reply_to_message.from_.id in voter_list:
+            voter_list.remove(msg.reply_to_message.from_.id)
+        else:
+            bot.send_message(msg.chat.id, text=config['messages']['unset_voter_failed'], reply_to_message_id=msg.id)
+            return
     else:
         if len(user_input_token) == 1:
             bot.send_message(msg.chat.id, text=config['messages']['unset_voter_prompt'],
@@ -209,7 +214,7 @@ def init_poll(msg: catbot.Message):
     poll_list.append(p.to_json())
     rec['poll'] = poll_list
     json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
-    resp_text = config['messages']['init_poll_succ'].format(poll_id=f'{p.chat_id}_{p.id_}',
+    resp_text = config['messages']['init_poll_succ'].format(poll_id=f'{p.chat_id}_{p.init_id}',
                                                             title=p.title,
                                                             last=p.readable_time,
                                                             anon_open=p.anonymous_open,
