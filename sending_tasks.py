@@ -60,7 +60,8 @@ def sending_trials(chat_id: int, title: str, user: str, comment: str):
                                   f' - <a href="https://zh.wikipedia.org/wiki/Special:Contributions/{user}"'
                                   f'>{user}</a> ({comment})',
                              parse_mode='HTML')
-        except catbot.APIError:
+        except catbot.APIError as e:
+            print(e.args[0])
             print(f'Retrying {title} ... {i + 1}')
             continue
         else:
