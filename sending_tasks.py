@@ -56,10 +56,10 @@ def sending_trials(chat_id: int, title: str, user: str, comment: str):
     for i in range(5):
         try:
             bot.send_message(chat_id,
-                             text=f'<a href="https://zh.wikipedia.org/wiki/{title}?redirect=no">{title}</a>'
-                                  f' - <a href="https://zh.wikipedia.org/wiki/Special:Contributions/{user}"'
-                                  f'>{user}</a> ({comment})',
-                             parse_mode='HTML')
+                             text=f'[{title}](https://zh.wikipedia.org/wiki/{title}?redirect=no)'
+                                  f' - [{user}](https://zh.wikipedia.org/wiki/Special:Contributions/{user})'
+                                  f' ({comment})',
+                             parse_mode='MarkdownV2')
         except catbot.APIError as e:
             print(e.args[0])
             print(f'Retrying {title} ... {i + 1}')

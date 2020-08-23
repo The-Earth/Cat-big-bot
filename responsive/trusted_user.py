@@ -72,4 +72,4 @@ def list_trusted(msg: catbot.Message):
     if len(resp_list) == 0:
         resp_text = config['messages']['list_trusted_empty']
 
-    bot.send_message(msg.chat.id, text=resp_text, parse_mode='HTML', reply_to_message_id=msg.id)
+    bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id)
