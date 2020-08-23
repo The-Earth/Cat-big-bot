@@ -20,7 +20,7 @@ def pass_on(msg: catbot.Message):
                                                                                  from_name=msg.from_.name,
                                                                                  from_username=from_username,
                                                                                  text=text),
-                         parse_mode='HTML')
+                         parse_mode='MarkdownV2')
     except catbot.APIError:
         bot.send_message(chat_id=msg.from_.id, text=config['messages']['pass_on_sending_failed'])
         raise
@@ -96,9 +96,9 @@ def list_block_private(msg: catbot.Message):
         bot.send_message(config['operator_id'], text=config['messages']['list_block_empty'], reply_to_message_id=msg.id)
         return
     for item in blocked_list:
-        resp_text += f'<a href="tg://user?id={item}">{item}</a>\n'
+        resp_text += f'[{item}](tg://user?id={item})\n'
 
-    bot.send_message(config['operator_id'], text=resp_text, parse_mode='HTML', reply_to_message_id=msg.id)
+    bot.send_message(config['operator_id'], text=resp_text, parse_mode='MarkdownV2', reply_to_message_id=msg.id)
 
 
 def unblock_private_cri(msg: catbot.Message) -> bool:

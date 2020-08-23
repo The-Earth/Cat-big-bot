@@ -70,5 +70,5 @@ def get_permalink(msg: catbot.Message):
 
     resp_text = ''
     for item in id_list:
-        resp_text += f'<a href="tg://user?id={item}">{item}</a>\n'
-    bot.send_message(msg.chat.id, text=resp_text, parse_mode='HTML', reply_to_message_id=msg.id)
+        resp_text += f'[{item}](tg://user?id={item})\n'
+    bot.send_message(msg.chat.id, text=resp_text, parse_mode='MarkdownV2', reply_to_message_id=msg.id)
