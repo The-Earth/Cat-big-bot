@@ -26,6 +26,11 @@ def new_pages():
             user: str = change['performer']['user_text']
             if 'comment' in change.keys():
                 comment: str = change['comment']
+                escape_dict = {'[': r'\[', ']': r'\]', '_': r'\_', '*': r'\*', '(': r'\(', ')': r'\)', '~': r'\~',
+                               '`': r'\`', '>': r'\>', '#': r'\#', '+': r'\+', '-': r'\-', '=': r'\=', '|': r'\|',
+                               '{': r'\{', '}': r'\}', '.': r'\.', '!': r'\!'}
+                for key in escape_dict.keys():
+                    comment = comment.replace(key, escape_dict[key])
             else:
                 comment = ''
 
@@ -57,8 +62,8 @@ def sending_trials(chat_id: int, title: str, user: str, comment: str):
         try:
             bot.send_message(chat_id,
                              text=f'[{title}](https://zh.wikipedia.org/wiki/{title}?redirect=no)'
-                                  f' - [{user}](https://zh.wikipedia.org/wiki/Special:Contributions/{user})'
-                                  f' ({comment})',
+                                  f' \\- [{user}](https://zh.wikipedia.org/wiki/Special:Contributions/{user})'
+                                  f' \\({comment}\\)',
                              parse_mode='MarkdownV2')
         except catbot.APIError as e:
             print(e.args[0])
