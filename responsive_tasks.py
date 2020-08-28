@@ -1,7 +1,11 @@
+import multiprocessing
+
+from responsive.admin_user import *
 from responsive.mark import *
 from responsive.misc import *
 from responsive.new_pages import *
 from responsive.pm import *
+from responsive.poll import *
 from responsive.trusted_user import *
 
 bot.add_msg_task(get_user_id_cri, get_user_id)
@@ -23,9 +27,22 @@ bot.add_msg_task(set_ns_cri, set_ns)
 bot.add_msg_task(block_private_cri, block_private)
 bot.add_msg_task(list_block_private_cri, list_block_private)
 bot.add_msg_task(unblock_private_cri, unblock_private)
+bot.add_msg_task(set_voter_cri, set_voter)
+bot.add_msg_task(list_voter_cri, list_voter)
+bot.add_msg_task(unset_voter_cri, unset_voter)
+bot.add_msg_task(set_admin_cri, set_admin)
+bot.add_msg_task(init_poll_cri, init_poll)
+bot.add_msg_task(start_poll_cri, start_poll)
+bot.add_query_task(vote_cri, vote)
+bot.add_query_task(stop_poll_cri, stop_poll)
 
-while True:
-    try:
-        bot.start()
-    except KeyboardInterrupt:
-        break
+if __name__ == '__main__':
+    multiprocessing.freeze_support()
+    scheduled_stop_poll_p = multiprocessing.Process(target=stop_poll_scheduled_main, daemon=True)
+    scheduled_stop_poll_p.start()
+
+    while True:
+        try:
+            bot.start()
+        except KeyboardInterrupt:
+            break

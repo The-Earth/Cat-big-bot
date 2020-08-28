@@ -1,10 +1,13 @@
 import json
+import multiprocessing
+import threading
 
 import catbot
 
 config = json.load(open('config.json', 'r', encoding='utf-8'))
-
 bot = catbot.Bot(config)
+t_lock = threading.Lock()
+p_lock = multiprocessing.Lock()
 
 
 def command_detector(cmd: str, msg: catbot.Message) -> bool:
@@ -81,6 +84,7 @@ def admin(func):
     """
     Similar to trusted, return False on non-admins.
     """
+
     def wrapper(*args, **kwargs):
         admin_list = record_empty_test('admin', list)[0]
         msg = args[0]
@@ -98,6 +102,7 @@ def voter(func):
     """
     Similar to trusted, limit vote right to voters.
     """
+
     def wrapper(*args, **kwargs):
         voter_list = record_empty_test('voter', list)[0]
         msg = args[0]

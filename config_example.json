@@ -76,6 +76,11 @@
     "start_poll_not_found": "未找到该投票，请使用 /init_poll 创建投票。",
     "poll": "【投票】 {title} #投票\n开始时间：{start_time}\n结束时间：{end_time}\n已有 {total} 人投票\n",
     "start_poll_already": "投票已开始，见 {url}",
-    "stop_poll_button": "结束投票"
+    "vote_received": "已收到您的投票",
+    "vote_ineligible": "您没有投票权",
+    "stop_poll_button": "结束投票",
+    "stop_poll_title": "--------投票已结束--------\n",
+    "vote_poll_stopped": "投票已结束",
+    "stop_poll_scheduled": "【投票】《{title}》已结束\n{link}"
   }
 }

@@ -71,6 +71,7 @@ class Poll:
         obj.open = data['open']
         obj.start_time = data['start_time']
         obj.last_time = data['last_time']
+        obj.readable_time = data['readable_time']
         obj.anonymous_open = data['anonymous_open']
         obj.anonymous_closed = data['anonymous_closed']
         obj.count_open = data['count_open']
