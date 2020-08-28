@@ -291,7 +291,8 @@ def vote_cri(query: catbot.CallbackQuery) -> bool:
 def vote(query: catbot.CallbackQuery):
     callback_token = query.data.split('_')
     voter_list = record_empty_test('voter', list)[0]
-    if query.from_.id not in voter_list:
+    admin_list = record_empty_test('admin', list)[0]
+    if query.from_.id not in voter_list and query.from_.id not in admin_list:
         bot.answer_callback_query(query.id, text=config['messages']['vote_ineligible'])
         return
     if not len(callback_token) == 4:
