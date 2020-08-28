@@ -5,25 +5,6 @@
     "proxy_url": "http://127.0.0.1:9999"
   },
   "operator_id": 987654321,
-  "help": {
-    "public": [
-      "/chat_id 查看当前聊天的 ID（群组 ID）",
-      "/user_id 查看所回复消息的发出者的 ID，或不回复消息查看自己的 ID",
-      "/mark 标记所回复的消息（记录仅限本群）",
-      "/list_marked 查看本群中被标记的消息",
-      "/unmark 取消标记",
-      "/set_trusted 将用户对我设定为可信（标记后于全域可信，谨慎使用）",
-      "/list_trusted 列出本群中的可信用户",
-      "/start_new_pages 开始中文维基百科的新页面推送",
-      "/list_ns 列出中文维基百科名字空间",
-      "/set_ns 设定新页面推送的名字空间",
-      "/stop_new_pages 停止新页面推送"
-    ],
-    "private": [
-      "/pass 在此命令后附加您想对主人说的话，这些话将被发送到主人那里",
-      "/permalink 尝试获取指定 ID 的用户的永久链接"
-    ]
-  },
   "record": "record.json",
   "messages": {
     "pass_on_new_msg_to_op": "收到新消息，来自<a href=\"tg://user?id={from_id}\">{from_name}</a> (ID: {from_id},{from_username})\n----\n{text}",
