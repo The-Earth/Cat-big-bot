@@ -32,23 +32,11 @@ def start(msg: catbot.Message):
 
 
 def bot_help_cri(msg: catbot.Message) -> bool:
-    if msg.chat.type == 'private':
-        return command_detector('/help', msg)
-    else:
-        trusted_list = record_empty_test('trusted', list)[0]
-        if msg.from_.id not in trusted_list and msg.from_.id != config['operator_id']:
-            return False
-
-        return f'/help@{bot.username}' in msg.commands and msg.text.startswith(f'/help@{bot.username}')
+    return command_detector('help', msg)
 
 
 def bot_help(msg: catbot.Message):
-    if msg.chat.type == 'private':
-        resp_text = '\n'.join(config['help']['private'])
-        bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id)
-    else:
-        resp_text = '\n'.join(config['help']['public'])
-        bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id)
+    bot.send_message(msg.chat.id, text=config['messages']['help'], reply_to_message_id=msg.id)
 
 
 def get_permalink_cri(msg: catbot.Message) -> bool:

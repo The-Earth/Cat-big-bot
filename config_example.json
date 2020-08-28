@@ -33,6 +33,7 @@
     "pass_on_reply_invalid_id": "用户 ID 无效。回复格式：/reply <user id> <text>",
     "pass_on_reply_succ": "消息已回复至{to_id}",
     "start": "使用 /help 查看帮助",
+    "help": "https://github.com/The-Earth/Cat-big-bot",
     "mark_private": "/mark 相关功能只能在有入群链接的群组中使用。",
     "mark_empty_reply": "请在使用 /mark 的同时回复您想要标记的消息。",
     "mark_succ": "已标记。使用 /list_marked 查看已标记的消息。",
