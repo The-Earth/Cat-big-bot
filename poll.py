@@ -1,5 +1,5 @@
-from typing import List
 import time
+from typing import List
 
 
 class Poll:
@@ -37,11 +37,11 @@ class Poll:
     def end_time(self):
         return self.start_time + self.last_time
 
-    def set_option(self, intput_option_list: List[str]):
+    def set_option(self, input_option_list: List[str]):
         if self.open:
             return
-        for i in range(len(intput_option_list)):
-            self.option_list.append({'text': intput_option_list[i], 'user': []})
+        for i in range(len(input_option_list)):
+            self.option_list.append({'text': input_option_list[i], 'user': []})
 
     def vote(self, user_id: int, option_id: int):
         if not self.open:

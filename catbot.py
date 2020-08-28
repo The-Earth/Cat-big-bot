@@ -398,7 +398,7 @@ class CallbackQuery:
         self.id: str = query_json['id']
         self.from_ = User(query_json['from'])
         if 'message' not in query_json.keys():
-            self.msg = None
+            self.msg = ''
         else:
             self.msg = Message(query_json['message'])
         self.chat_instance: str = query_json['chat_instance']
