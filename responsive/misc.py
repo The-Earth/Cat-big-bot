@@ -32,7 +32,7 @@ def start(msg: catbot.Message):
 
 
 def bot_help_cri(msg: catbot.Message) -> bool:
-    return command_detector('help', msg)
+    return command_detector('/help', msg)
 
 
 def bot_help(msg: catbot.Message):
