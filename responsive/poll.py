@@ -365,7 +365,7 @@ def stop_poll(query: catbot.CallbackQuery):
         p = Poll.from_json(poll_list[i])
 
         if p.chat_id == callback_chat_id and p.init_id == callback_init_id and p.open:
-            p.close()
+            p.stop()
             poll_list.pop(i)
             rec['poll'] = poll_list
             json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
@@ -388,7 +388,7 @@ def stop_poll_scheduled():
     while i < (len(poll_list)):
         p = Poll.from_json(poll_list[i])
         if time.time() > p.end_time and p.open:
-            p.close()
+            p.stop()
             poll_list.pop(i)
             rec['poll'] = poll_list
             json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
