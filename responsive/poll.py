@@ -220,48 +220,39 @@ def init_poll(msg: catbot.Message):
     poll_list.append(p.to_json())
     rec['poll'] = poll_list
     json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
-    resp_text = config['messages']['init_poll_succ'].format(poll_id=f'{p.chat_id}_{p.init_id}',
-                                                            title=p.title,
+    resp_text = config['messages']['init_poll_succ'].format(title=p.title,
                                                             last=p.readable_time,
                                                             anon_open=p.anonymous_open,
                                                             anon_closed=p.anonymous_closed,
                                                             count_open=p.count_open,
                                                             multiple=p.multiple)
-    bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id)
+    start_button = catbot.InlineKeyboardButton(config['messages']['start_poll_button'],
+                                               callback_data=f'vote_{p.chat_id}_{p.init_id}_start')
+    keyboard = catbot.InlineKeyboard([[start_button]])
+    bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id, reply_markup=keyboard)
 
 
 @admin
-def start_poll_cri(msg: catbot.Message):
-    if len(msg.commands) == 0 or not msg.text.startswith('/start_poll_'):
-        return False
-    cmd_token = msg.commands[0].split('_')
-    return len(cmd_token) == 4
+def start_poll_cri(query: catbot.CallbackQuery) -> bool:
+    return query.data.startswith('vote_') and query.data.endswith('_start')
 
 
-def start_poll(msg: catbot.Message):
+def start_poll(query: catbot.CallbackQuery):
     poll_list, rec = record_empty_test('poll', list)
-    cmd_token = msg.commands[0].replace(f'@{bot.username}', '').split('_')
+    data_token = query.data.split('_')
     try:
-        cmd_chat_id = int(cmd_token[2])
-        cmd_id = int(cmd_token[3])
+        cmd_chat_id = int(data_token[1])
+        cmd_id = int(data_token[2])
     except ValueError:
+        bot.answer_callback_query(query.id)
         return
 
-    if cmd_token[2] != str(msg.chat.id).replace('-100', ''):
-        bot.send_message(msg.chat.id, text=config['messages']['start_poll_not_found'], reply_to_message_id=msg.id)
-        return
     for i in range(len(poll_list)):
         p = Poll.from_json(poll_list[i])
         if p.chat_id == cmd_chat_id and p.init_id == cmd_id:
             break
     else:
-        bot.send_message(msg.chat.id, text=config['messages']['start_poll_not_found'], reply_to_message_id=msg.id)
-        return
-
-    if p.open or p.start_time != 0:
-        url = f'{msg.chat.link}/{p.poll_id}'
-        bot.send_message(msg.chat.id, text=config['messages']['start_poll_already'].format(url=url),
-                         reply_to_message_id=msg.id)
+        bot.answer_callback_query(query.id, text=config['messages']['start_poll_not_found'])
         return
 
     p.start()
@@ -275,8 +266,10 @@ def start_poll(msg: catbot.Message):
                                                     callback_data=f'vote_{p.chat_id}_{p.init_id}_stop')])
     keyboard = catbot.InlineKeyboard(button_list)
 
-    poll_msg: catbot.Message = bot.send_message(msg.chat.id, text=get_poll_text(p), reply_markup=keyboard,
-                                                reply_to_message_id=msg.id)
+    poll_msg: catbot.Message = bot.send_message(query.msg.chat.id, text=get_poll_text(p), reply_markup=keyboard,
+                                                reply_to_message_id=query.msg.id)
+    bot.edit_message(query.msg.chat.id, query.msg.id, text=query.msg.text)
+    bot.answer_callback_query(query.id, text='投票已开始')
 
     p.poll_id = poll_msg.id
     poll_list[i] = p.to_json()
@@ -285,7 +278,7 @@ def start_poll(msg: catbot.Message):
 
 
 def vote_cri(query: catbot.CallbackQuery) -> bool:
-    return query.data.startswith('vote_') and not query.data.endswith('_stop')
+    return query.data.startswith('vote_') and not (query.data.endswith('_stop') or query.data.endswith('_start'))
 
 
 def vote(query: catbot.CallbackQuery):

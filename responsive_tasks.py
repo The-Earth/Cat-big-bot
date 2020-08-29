@@ -32,7 +32,7 @@ bot.add_msg_task(list_voter_cri, list_voter)
 bot.add_msg_task(unset_voter_cri, unset_voter)
 bot.add_msg_task(set_admin_cri, set_admin)
 bot.add_msg_task(init_poll_cri, init_poll)
-bot.add_msg_task(start_poll_cri, start_poll)
+bot.add_query_task(start_poll_cri, start_poll)
 bot.add_query_task(vote_cri, vote)
 bot.add_query_task(stop_poll_cri, stop_poll)
 
