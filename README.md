@@ -15,7 +15,7 @@
 
 * [使用投票](docs/poll.md)
 * [voter 用户](docs/voter.md)
-* [admin 用户](docs/voter.md)
+* [admin 用户](docs/admin.md)
 
 ## trusted 用户
 
