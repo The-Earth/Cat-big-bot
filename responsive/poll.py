@@ -13,11 +13,22 @@ from responsive import record_empty_test, command_detector
 def get_poll_text(p: Poll) -> str:
     start_time = time.strftime('%Y/%m/%d %H:%M:%S', time.gmtime(p.start_time))
     end_time = time.strftime('%Y/%m/%d %H:%M:%S', time.gmtime(p.start_time + p.last_time))
-    total_votes = 0
-    for option in p.option_list:
-        total_votes += len(option['user'])
 
+    voted_user_set = set()
+    for option in p.option_list:
+        voted_user_set = voted_user_set.union(option['user'])
+    total_votes = len(voted_user_set)
+
+    voted_user_dict = {}
     chat_id = '-100' + str(p.chat_id)
+    for user_id in voted_user_set:
+        try:
+            user = bot.get_chat_member(chat_id, user_id)
+        except catbot.UserNotFoundError:
+            voted_user_dict[user_id] = user_id
+        else:
+            voted_user_dict[user_id] = user.name
+
     output = config['messages']['poll'].format(title=p.title, start_time=start_time, end_time=end_time,
                                                total=total_votes)
 
@@ -26,16 +37,11 @@ def get_poll_text(p: Poll) -> str:
 
         if (p.open and not p.anonymous_open) or (not p.open and not p.anonymous_closed):
             for user_id in option['user']:
-                try:
-                    user = bot.get_chat_member(chat_id, user_id)
-                except catbot.UserNotFoundError:
-                    output += f'- {user_id}\n'
-                else:
-                    output += f'- {user.name}\n'
+                output += f'- {voted_user_dict[user_id]}\n'
 
         if (p.open and p.count_open) or (not p.open):
             proportion = len(option['user']) / total_votes if total_votes != 0 else 0
-            output += f'-------- {len(option["user"])} {proportion * 100:.2f}%\n'
+            output += f'-------- {len(option["user"])}, {proportion * 100:.1f}%\n'
 
         output += '\n'
 
