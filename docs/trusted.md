@@ -1,19 +1,18 @@
 # Trusted
 
-trusted 用户是受信任的用户，可以执行一些易被滥用的指令。trusted 用户可由现有的 trusted 用户授权
+trusted 用户是受信任的用户，可以执行一些易被滥用的指令。trusted 用户可由现有的 trusted 用户授权。
 
 ## 权限
 
 * 可以使用所有用户均可使用的指令
 * 于群组中可以使用：
-    * `/unmark`
-    * `/help@CatBigBot` (必须含有 `@CatBigBot`)
+    * [`/unmark`](mark.md)
     * `/set_trusted`
     * `/list_trusted`
 * 于私聊中可以使用：
     * `/set_trusted`
 
-## 指令
+## 权限管理指令
 
 ### /set_trusted
 

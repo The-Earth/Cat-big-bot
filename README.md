@@ -1,11 +1,13 @@
 # Cat-big-bot
-多功能机器人，功能设计诡异，谨慎使用。
+[多功能 Telegram 机器人](https://t.me/CatBigBot) 。功能设计诡异，谨慎使用。
 
 ## 运行
 
 机器人分为两部分，`responsive_tasks.py` 放置回应用户指令的功能，`sending_tasks.py` 放置根据其他信息源推送内容的功能（纯发送，不响应），目前只有中文维基百科新页面推送。运行机器人时直接运行这两个文件。
 
 `catbot.py` 是便于操作 Telegram API 的轮子，因为作者很菜，看不懂现成轮子的文档，所以自己写了一个。功能残缺，用到哪些就写到哪些。
+
+`config_example.json` 是配置文件示例，将 `token`、`operator_id` 等配置修改好之后，把文件保存至 `config.json` 即可使用。
 
 ## 用户权限
 
@@ -56,3 +58,7 @@
 ```
 /permalink <用户ID>
 ```
+
+### /help
+
+在群组中或私聊中使用，显示帮助链接。在群组中使用时必须含有 `@CatBigBot` （或您机器人的 username）后缀。

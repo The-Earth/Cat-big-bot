@@ -2,7 +2,7 @@
 
 voter 用户由 [admin](admin.md) 用户授权，可以在[投票](poll.md)中点按选项。
 
-## 指令
+## 权限管理指令
 
 ### /set_voter
 
