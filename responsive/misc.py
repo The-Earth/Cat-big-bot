@@ -32,7 +32,10 @@ def start(msg: catbot.Message):
 
 
 def bot_help_cri(msg: catbot.Message) -> bool:
-    return command_detector('/help', msg)
+    if msg.chat.type != 'private':
+        return f'/help@{bot.username}' in msg.commands and msg.text.startswith(f'/help@{bot.username}')
+    else:
+        return command_detector('/help', msg)
 
 
 def bot_help(msg: catbot.Message):
