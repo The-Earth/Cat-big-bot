@@ -86,7 +86,12 @@ class Bot(User):
     def start(self):
         update_offset = 0
         while True:
-            updates = self.get_updates(update_offset)
+            try:
+                updates = self.get_updates(update_offset)
+            except APIError as e:
+                print(e.args[0])
+                continue
+
             for item in updates:
                 update_offset = item['update_id'] + 1
                 if 'message' in item.keys() or 'edited_message' in item.keys():
@@ -94,10 +99,7 @@ class Bot(User):
                     msg = Message(item[msg_type])
                     for criteria, action, action_kw in self.msg_tasks:
                         if criteria(msg):
-                            try:
-                                threading.Thread(target=action, args=(msg,), kwargs=action_kw).start()
-                            except APIError as e:  # Exception handling here might be useless
-                                print(e.args[0])
+                            threading.Thread(target=action, args=(msg,), kwargs=action_kw).start()
 
                 elif 'callback_query' in item.keys():
                     query = CallbackQuery(item['callback_query'])
