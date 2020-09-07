@@ -105,10 +105,13 @@ def voter(func):
 
     def wrapper(*args, **kwargs):
         voter_list = record_empty_test('voter', list)[0]
+        admin_list = record_empty_test('admin', list)[0]
         msg = args[0]
-        if msg.from_.id not in voter_list:
+        if msg.from_.id in voter_list:
+            return func(*args, **kwargs)
+        elif msg.from_.id in admin_list:
+            return func(*args, **kwargs)
+        else:
             return False
-
-        return func(*args, **kwargs)
 
     return wrapper

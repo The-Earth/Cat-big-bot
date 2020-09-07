@@ -38,6 +38,7 @@
         * [`/pass`](pm.md)
 * [admin](admin.md) 用户
     * 可以使用 trusted 用户可使用的指令
+    * 可以使用 voter 用户可使用的指令
     * 于群组中可以使用：
         * [`/set_voter`](voter.md)
         * [`/list_voter`](voter.md)
