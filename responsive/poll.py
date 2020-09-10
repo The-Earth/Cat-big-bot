@@ -244,7 +244,6 @@ def start_poll_cri(query: catbot.CallbackQuery) -> bool:
 
 
 def start_poll(query: catbot.CallbackQuery):
-    poll_list, rec = record_empty_test('poll', list)
     data_token = query.data.split('_')
     try:
         cmd_chat_id = int(data_token[1])
@@ -253,6 +252,8 @@ def start_poll(query: catbot.CallbackQuery):
         bot.answer_callback_query(query.id)
         return
 
+    t_lock.acquire()
+    poll_list, rec = record_empty_test('poll', list)
     for i in range(len(poll_list)):
         p = Poll.from_json(poll_list[i])
         if p.chat_id == cmd_chat_id and p.init_id == cmd_id:
@@ -281,6 +282,8 @@ def start_poll(query: catbot.CallbackQuery):
     poll_list[i] = p.to_json()
     rec['poll'] = poll_list
     json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+
+    t_lock.release()
 
 
 def vote_cri(query: catbot.CallbackQuery) -> bool:
@@ -399,8 +402,8 @@ def stop_poll_scheduled():
             resp_text = config['messages']['stop_poll_title']
             bot.edit_message('-100' + str(p.chat_id), p.poll_id,
                              text=resp_text + get_poll_text(p))
-
-        i += 1
+        else:
+            i += 1
 
     p_lock.release()
 
