@@ -184,9 +184,8 @@ class Bot(User):
         :param user_id: ID of the target user.
         :return: A ChatMember object, including info about permissions granted to the user in a specific chat.
         """
-        chat = self.get_chat(chat_id)
         try:
-            chat_member = ChatMember(self.api('getChatMember', {'chat_id': chat_id, 'user_id': user_id}), chat)
+            chat_member = ChatMember(self.api('getChatMember', {'chat_id': chat_id, 'user_id': user_id}), chat_id)
         except APIError as e:
             if 'Bad Request: user not found' in e.args[0]:
                 raise UserNotFoundError
@@ -197,7 +196,7 @@ class Bot(User):
 
 
 class ChatMember(User):
-    def __init__(self, member_json: dict, chat):
+    def __init__(self, member_json: dict, chat_id: int):
         """
         Typically, build a ChatMember object from Bot.get_chat_member() method, which automatically get corresponding
         Chat object.
@@ -205,8 +204,8 @@ class ChatMember(User):
         :param chat: A Chat object which this ChatMember belongs to.
         """
         super().__init__(member_json['user'])
-        self.raw = f'{{"chat_member": {member_json}, "chat": {chat.raw}}}'
-        self.chat = chat
+        self.raw = f'{{"chat_member": {member_json}, "chat_id": {chat_id}}}'
+        self.chat_id: int = chat_id
         self.status: str = member_json['status']
         if 'custom_title' in member_json.keys():
             self.custom_title: str = member_json['custom_title']
