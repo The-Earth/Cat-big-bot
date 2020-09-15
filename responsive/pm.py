@@ -38,13 +38,12 @@ def reply(msg: catbot.Message):
     content = ' '.join(text.split(' ')[1:])
     try:
         bot.send_message(chat_id=to_id, text=config['messages']['pass_on_reply_from_op'].format(content=content))
-    except catbot.APIError as ex:
-        if 'chat not found' in ex.args[0]:
-            bot.send_message(chat_id=config['operator_id'],
-                             text=config['messages']['pass_on_reply_invalid_id'])
-        else:
-            bot.send_message(chat_id=config['operator_id'], text=config['messages']['pass_on_sending_failed'])
-            raise
+    except catbot.ChatNotFoundError:
+        bot.send_message(chat_id=config['operator_id'],
+                         text=config['messages']['pass_on_reply_invalid_id'])
+    except catbot.APIError:
+        bot.send_message(chat_id=config['operator_id'], text=config['messages']['pass_on_sending_failed'])
+        raise
     else:
         bot.send_message(chat_id=config['operator_id'],
                          text=config['messages']['pass_on_reply_succ'].format(to_id=to_id))
