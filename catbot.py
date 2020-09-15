@@ -201,7 +201,7 @@ class ChatMember(User):
         Typically, build a ChatMember object from Bot.get_chat_member() method, which automatically get corresponding
         Chat object.
         :param member_json: Raw response from "getChatMember" API
-        :param chat: A Chat object which this ChatMember belongs to.
+        :param chat_id: ID of the chat which this ChatMember belongs to.
         """
         super().__init__(member_json['user'])
         self.raw = f'{{"chat_member": {member_json}, "chat_id": {chat_id}}}'
@@ -346,7 +346,7 @@ class InlineKeyboardButton:
         """
         self.text = text
         if len(kwargs) == 0:
-            raise APIError('Inline keyboard button must have either url or calback_data.')
+            raise APIError('Inline keyboard button must have either url or callback_data.')
         if 'url' in kwargs.keys():
             self.url = kwargs['url']
         if 'callback_data' in kwargs.keys():
