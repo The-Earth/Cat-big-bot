@@ -149,6 +149,12 @@ class Bot(User):
             else:
                 raise
 
+    def forward_message(self, from_chat_id, chat_id, msg_id, **kw):
+        return Message(self.api('forwardMessage', {'from_chat_id': from_chat_id,
+                                                   'chat_id': chat_id,
+                                                   'message_id': msg_id,
+                                                   **kw}))
+
     def answer_callback_query(self, callback_query_id, **kwargs) -> bool:
         """
         :param callback_query_id: callback_query_id you receive in callback_query
