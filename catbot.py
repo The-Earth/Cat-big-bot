@@ -149,11 +149,19 @@ class Bot(User):
             else:
                 raise
 
-    def forward_message(self, from_chat_id, chat_id, msg_id, **kw):
+    def forward_message(self, from_chat_id, chat_id, msg_id, disable_notification=False):
+        """
+        :param from_chat_id: Unique identifier for the chat where the original message was sent
+        :param chat_id: Unique identifier for the target chat or username of the target channel
+        :param msg_id: Message identifier in the chat specified in from_chat_id
+        :param disable_notification: Optional. Sends the message silently. Users will receive a
+                                     notification with no sound.
+        :return: The forwarded message.
+        """
         return Message(self.api('forwardMessage', {'from_chat_id': from_chat_id,
                                                    'chat_id': chat_id,
                                                    'message_id': msg_id,
-                                                   **kw}))
+                                                   'disable_notification': disable_notification}))
 
     def answer_callback_query(self, callback_query_id, **kwargs) -> bool:
         """
