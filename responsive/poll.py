@@ -299,7 +299,12 @@ def vote(query: catbot.CallbackQuery):
     callback_token = query.data.split('_')
     voter_dict = record_empty_test('voter', dict)[0]
     admin_list = record_empty_test('admin', list)[0]
-    if query.from_.id not in voter_dict[str(query.msg.chat.id)] and query.from_.id not in admin_list:
+
+    if str(query.msg.chat.id) in voter_dict.keys():
+        voter_list = voter_dict[str(query.msg.chat.id)]
+    else:
+        voter_list = []
+    if query.from_.id not in voter_list and query.from_.id not in admin_list:
         bot.answer_callback_query(query.id, text=config['messages']['vote_ineligible'])
         return
     if not len(callback_token) == 4:
