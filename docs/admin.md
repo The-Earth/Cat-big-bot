@@ -11,10 +11,8 @@ admin 用户由机器人操作者授权，是可以管理[投票](poll.md)的用
     * [`/unset_voter`](voter.md)
     * [`/init_poll`](poll.md)
     * [点按开始投票按钮](poll.md)
+    * [点按取消投票按钮](poll.md)
     * [点按关闭投票按钮](poll.md)
-* 于私聊中可以使用：
-    * [`/set_voter`](voter.md)
-    * [`/unset_voter`](voter.md)
 
 ## 权限管理指令
 

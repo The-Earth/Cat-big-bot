@@ -46,6 +46,7 @@
         * [`/init_poll`](poll.md)
         * [`/start_poll`](poll.md)
         * [点按开始投票按钮](poll.md)
+        * [点按取消投票按钮](poll.md)
         * [点按结束投票按钮](poll.md)
 * [voter](voter.md) 用户
     * 于群组中可以使用：
