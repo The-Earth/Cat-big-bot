@@ -220,6 +220,7 @@ class ChatMember(User):
         super().__init__(member_json['user'])
         self.raw = f'{{"chat_member": {member_json}, "chat_id": {chat_id}}}'
         self.chat_id: int = chat_id
+        # Can be “creator”, “administrator”, “member”, “restricted”, “left” or “kicked”
         self.status: str = member_json['status']
         if 'custom_title' in member_json.keys():
             self.custom_title: str = member_json['custom_title']
