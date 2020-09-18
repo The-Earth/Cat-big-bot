@@ -239,7 +239,9 @@ def init_poll(msg: catbot.Message):
                                                             multiple=p.multiple)
     start_button = catbot.InlineKeyboardButton(config['messages']['start_poll_button'],
                                                callback_data=f'vote_{p.chat_id}_{p.init_id}_start')
-    keyboard = catbot.InlineKeyboard([[start_button]])
+    abort_button = catbot.InlineKeyboardButton(config['messages']['abort_poll_button'],
+                                               callback_data=f'vote_{p.chat_id}_{p.init_id}_abort')
+    keyboard = catbot.InlineKeyboard([[start_button, abort_button]])
     bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id, reply_markup=keyboard)
 
 
@@ -281,7 +283,7 @@ def start_poll(query: catbot.CallbackQuery):
     poll_msg: catbot.Message = bot.send_message(query.msg.chat.id, text=get_poll_text(p), reply_markup=keyboard,
                                                 reply_to_message_id=query.msg.id)
     bot.edit_message(query.msg.chat.id, query.msg.id, text=query.msg.text)
-    bot.answer_callback_query(query.id, text='投票已开始')
+    bot.answer_callback_query(query.id, text=config['messages']['start_poll_answer'])
 
     p.poll_id = poll_msg.id
     poll_list[i] = p.to_json()
@@ -291,8 +293,43 @@ def start_poll(query: catbot.CallbackQuery):
     t_lock.release()
 
 
+@admin
+def abort_poll_cri(query: catbot.CallbackQuery) -> bool:
+    return query.data.startswith('vote_') and query.data.endswith('_abort')
+
+
+def abort_poll(query: catbot.CallbackQuery):
+    data_token = query.data.split('_')
+    try:
+        cmd_chat_id = int(data_token[1])
+        cmd_id = int(data_token[2])
+    except ValueError:
+        bot.answer_callback_query(query.id)
+        return
+
+    t_lock.acquire()
+    poll_list, rec = record_empty_test('poll', list)
+    for i in range(len(poll_list)):
+        p = Poll.from_json(poll_list[i])
+        if p.chat_id == cmd_chat_id and p.init_id == cmd_id:
+            poll_list.pop(i)
+            break
+    else:
+        bot.answer_callback_query(query.id, text=config['messages']['start_poll_not_found'])
+        return
+
+    bot.edit_message(query.msg.chat.id, query.msg.id, text=config['messages']['abort_poll_title'] + query.msg.text)
+    bot.answer_callback_query(query.id, text=config['messages']['abort_poll_answer'])
+
+    rec['poll'] = poll_list
+    json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+
+    t_lock.release()
+
+
 def vote_cri(query: catbot.CallbackQuery) -> bool:
-    return query.data.startswith('vote_') and not (query.data.endswith('_stop') or query.data.endswith('_start'))
+    return query.data.startswith('vote_') and not (query.data.endswith('_stop') or query.data.endswith('_start')
+                                                   or query.data.endswith('_abort'))
 
 
 def vote(query: catbot.CallbackQuery):
