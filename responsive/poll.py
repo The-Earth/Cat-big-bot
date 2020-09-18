@@ -100,15 +100,17 @@ def list_voter(msg: catbot.Message):
 
     resp_list = []
     bot.send_message(msg.chat.id, text=config['messages']['list_user_pre'], reply_to_message_id=msg.id)
-    for voter_id in voter_dict[str(msg.chat.id)]:
-        try:
-            voter_user = bot.get_chat_member(msg.chat.id, voter_id)
-            if voter_user.status == 'kicked':
+
+    if str(msg.chat.id) in voter_dict.keys():
+        for voter_id in voter_dict[str(msg.chat.id)]:
+            try:
+                voter_user = bot.get_chat_member(msg.chat.id, voter_id)
+                if voter_user.status == 'kicked':
+                    continue
+            except catbot.UserNotFoundError:
                 continue
-        except catbot.UserNotFoundError:
-            continue
-        else:
-            resp_list.append(voter_user)
+            else:
+                resp_list.append(voter_user)
 
     resp_text: str = config['messages']['list_voter_succ']
     for user in resp_list:
