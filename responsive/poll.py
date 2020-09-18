@@ -50,11 +50,11 @@ def get_poll_text(p: Poll) -> str:
 
 @admin
 def set_voter_cri(msg: catbot.Message) -> bool:
-    return command_detector('/set_voter', msg)
+    return command_detector('/set_voter', msg) and msg.chat.type != 'private'
 
 
 def set_voter(msg: catbot.Message):
-    voter_list, rec = record_empty_test('voter', list)
+    voter_dict, rec = record_empty_test('voter', dict)
 
     new_voter_id = []
     if msg.reply:
@@ -71,7 +71,9 @@ def set_voter(msg: catbot.Message):
                 except ValueError:
                     continue
 
-    voter_set = set(voter_list)
+    if str(msg.chat.id) not in voter_dict.keys():
+        voter_dict[str(msg.chat.id)] = []
+    voter_set = set(voter_dict[str(msg.chat.id)])
     old_voter_set = voter_set.copy()
     voter_set.update(new_voter_id)
     delta = voter_set - old_voter_set
@@ -82,7 +84,8 @@ def set_voter(msg: catbot.Message):
         for item in delta:
             reply_text += str(item) + '\n'
 
-        rec['voter'] = list(voter_set)
+        voter_dict[str(msg.chat.id)] = list(voter_set)
+        rec['voter'] = voter_dict
         json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
         bot.send_message(msg.chat.id, text=reply_text, reply_to_message_id=msg.id)
 
@@ -93,11 +96,11 @@ def list_voter_cri(msg: catbot.Message) -> bool:
 
 
 def list_voter(msg: catbot.Message):
-    voter_list, rec = record_empty_test('voter', list)
+    voter_dict, rec = record_empty_test('voter', dict)
 
     resp_list = []
     bot.send_message(msg.chat.id, text=config['messages']['list_user_pre'], reply_to_message_id=msg.id)
-    for voter_id in voter_list:
+    for voter_id in voter_dict[str(msg.chat.id)]:
         try:
             voter_user = bot.get_chat_member(msg.chat.id, voter_id)
             if voter_user.status == 'kicked':
@@ -123,14 +126,14 @@ def unset_voter_cri(msg: catbot.Message) -> bool:
 
 
 def unset_voter(msg: catbot.Message):
-    voter_list, rec = record_empty_test('voter', list)
+    voter_dict, rec = record_empty_test('voter', dict)
 
     user_input_token = msg.text.split()
     rm_voter_list = []
     if msg.reply:
         rm_voter_list.append(str(msg.reply_to_message.from_.id))
-        if msg.reply_to_message.from_.id in voter_list:
-            voter_list.remove(msg.reply_to_message.from_.id)
+        if msg.reply_to_message.from_.id in voter_dict[str(msg.chat.id)]:
+            voter_dict[str(msg.chat.id)].remove(msg.reply_to_message.from_.id)
         else:
             bot.send_message(msg.chat.id, text=config['messages']['unset_voter_failed'], reply_to_message_id=msg.id)
             return
@@ -142,7 +145,7 @@ def unset_voter(msg: catbot.Message):
         else:
             for item in user_input_token[1:]:
                 try:
-                    voter_list.remove(int(item))
+                    voter_dict[str(msg.chat.id)].remove(int(item))
                 except ValueError:
                     continue
                 else:
@@ -151,7 +154,7 @@ def unset_voter(msg: catbot.Message):
     if len(rm_voter_list) == 0:
         bot.send_message(msg.chat.id, text=config['messages']['unset_voter_failed'], reply_to_message_id=msg.id)
     else:
-        rec['voter'] = voter_list
+        rec['voter'] = voter_dict
         json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
         resp_text = config['messages']['unset_voter_succ'] + '\n'.join(rm_voter_list)
         bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id)
@@ -292,9 +295,9 @@ def vote_cri(query: catbot.CallbackQuery) -> bool:
 
 def vote(query: catbot.CallbackQuery):
     callback_token = query.data.split('_')
-    voter_list = record_empty_test('voter', list)[0]
+    voter_dict = record_empty_test('voter', dict)[0]
     admin_list = record_empty_test('admin', list)[0]
-    if query.from_.id not in voter_list and query.from_.id not in admin_list:
+    if query.from_.id not in voter_dict[str(query.msg.chat.id)] and query.from_.id not in admin_list:
         bot.answer_callback_query(query.id, text=config['messages']['vote_ineligible'])
         return
     if not len(callback_token) == 4:
