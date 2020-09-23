@@ -249,7 +249,8 @@ class Message:
         self.raw = msg_json
         self.chat = Chat(msg_json['chat'])
         self.id: int = msg_json['message_id']
-        self.from_ = User(msg_json['from'])
+        if 'from' in msg_json.keys():
+            self.from_ = User(msg_json['from'])
         self.date: int = msg_json['date']
 
         if 'forward_from' in msg_json.keys():
