@@ -307,8 +307,10 @@ class Message:
         self.codes = []
         self.text_links = []
         self.text_mention = []
+        self.html_formatted_text = self.text
         if 'entities' in msg_json.keys() or 'caption_entities' in msg_json.keys():
             entity_type = 'entities' if 'entities' in msg_json.keys() else 'caption_entities'
+            entity_to_be_formatted = []
             for item in msg_json[entity_type]:
                 offset = item['offset']
                 length = item['length']
@@ -324,18 +326,54 @@ class Message:
                     self.links.append(self.text[offset:offset + length])
                 elif item['type'] == 'bold':
                     self.bolds.append(self.text[offset:offset + length])
+                    entity_to_be_formatted.append(item)
                 elif item['type'] == 'italic':
                     self.italics.append(self.text[offset:offset + length])
+                    entity_to_be_formatted.append(item)
                 elif item['type'] == 'underline':
                     self.underlines.append(self.text[offset:offset + length])
+                    entity_to_be_formatted.append(item)
                 elif item['type'] == 'strikethrough':
                     self.strikethroughs.append(self.text[offset:offset + length])
+                    entity_to_be_formatted.append(item)
                 elif item['type'] == 'code':
                     self.codes.append(self.text[offset:offset + length])
+                    entity_to_be_formatted.append(item)
                 elif item['type'] == 'text_link':
                     self.text_links.append((self.text[offset:offset + length], item['url']))
+                    entity_to_be_formatted.append(item)
                 elif item['type'] == 'text_mention':
                     self.text_mention.append((self.text[offset:offset + length], User(item['user'])))
+                    entity_to_be_formatted.append(item)
+
+            entity_to_be_formatted = sorted(entity_to_be_formatted, key=lambda x: x['offset'], reverse=True)
+            for item in entity_to_be_formatted:
+                offset = item['offset']
+                length = item['length']
+                if item['type'] == 'bold':
+                    self.html_formatted_text = self.text[:offset] + f'<b>{self.text[offset:offset + length]}</b>' + \
+                                               self.html_formatted_text[offset + length:]
+                elif item['type'] == 'italic':
+                    self.html_formatted_text = self.text[:offset] + f'<i>{self.text[offset:offset + length]}</i>' + \
+                                               self.html_formatted_text[offset + length:]
+                elif item['type'] == 'underline':
+                    self.html_formatted_text = self.text[:offset] + f'<u>{self.text[offset:offset + length]}</u>' + \
+                                               self.html_formatted_text[offset + length:]
+                elif item['type'] == 'strikethrough':
+                    self.html_formatted_text = self.text[:offset] + f'<s>{self.text[offset:offset + length]}</s>' + \
+                                               self.html_formatted_text[offset + length:]
+                elif item['type'] == 'code':
+                    self.html_formatted_text = self.text[:offset] + \
+                                               f'<code>{self.text[offset:offset + length]}</code>' +\
+                                               self.html_formatted_text[offset + length:]
+                elif item['type'] == 'text_link':
+                    self.html_formatted_text = self.text[:offset] + f"<a href=\"{item['url']}\">" \
+                                                                    f"{self.text[offset:offset + length]}</a>" + \
+                                               self.html_formatted_text[offset + length:]
+                elif item['type'] == 'text_mention':
+                    self.html_formatted_text = self.text[:offset] + f"<a href=\"tg://user?id={item['user']['id']}\">" \
+                                                                    f"{self.text[offset:offset + length]}</a>" + \
+                                               self.html_formatted_text[offset + length:]
 
         if 'dice' in msg_json.keys():
             self.dice = True
