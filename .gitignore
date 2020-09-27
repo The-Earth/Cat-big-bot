@@ -56,7 +56,7 @@ env.bak/
 venv.bak/
 
 # Data
-.json
+*.json
 
 # IDE
 .idea/
