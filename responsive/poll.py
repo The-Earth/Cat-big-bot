@@ -169,7 +169,7 @@ def init_poll_cri(msg: catbot.Message) -> bool:
 
 def init_poll(msg: catbot.Message):
     poll_list, rec = record_empty_test('poll', list)
-    user_input_token = msg.text.split()
+    user_input_token = msg.html_formatted_text.split()
     if len(user_input_token) == 1:
         bot.send_message(msg.chat.id, text=config['messages']['init_poll_failed'], reply_to_message_id=msg.id)
         return
@@ -242,7 +242,7 @@ def init_poll(msg: catbot.Message):
     abort_button = catbot.InlineKeyboardButton(config['messages']['abort_poll_button'],
                                                callback_data=f'vote_{p.chat_id}_{p.init_id}_abort')
     keyboard = catbot.InlineKeyboard([[start_button, abort_button]])
-    bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id, reply_markup=keyboard)
+    bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id, reply_markup=keyboard, parse_mode='HTML')
 
 
 @admin
@@ -281,7 +281,7 @@ def start_poll(query: catbot.CallbackQuery):
     keyboard = catbot.InlineKeyboard(button_list)
 
     poll_msg: catbot.Message = bot.send_message(query.msg.chat.id, text=get_poll_text(p), reply_markup=keyboard,
-                                                reply_to_message_id=query.msg.id)
+                                                reply_to_message_id=query.msg.id, parse_mode='HTML')
     bot.edit_message(query.msg.chat.id, query.msg.id, text=query.msg.text)
     bot.answer_callback_query(query.id, text=config['messages']['start_poll_answer'])
 
@@ -379,7 +379,7 @@ def vote(query: catbot.CallbackQuery):
             keyboard = catbot.InlineKeyboard(button_list)
 
             bot.edit_message('-100' + str(callback_chat_id), p.poll_id, text=get_poll_text(p),
-                             reply_markup=keyboard)
+                             reply_markup=keyboard, parse_mode='HTML')
             break
 
         elif p.chat_id == callback_chat_id and p.init_id == callback_init_id and not p.open:
@@ -423,7 +423,7 @@ def stop_poll(query: catbot.CallbackQuery):
             bot.answer_callback_query(query.id)
             resp_text = config['messages']['stop_poll_title']
             bot.edit_message('-100' + str(callback_chat_id), p.poll_id,
-                             text=resp_text + get_poll_text(p))
+                             text=resp_text + get_poll_text(p), parse_mode='HTML')
             break
     else:
         t_lock.release()
@@ -445,10 +445,10 @@ def stop_poll_scheduled():
             chat_link = bot.get_chat('-100' + str(p.chat_id)).link
             poll_link = chat_link + f'/{p.poll_id}' if chat_link != '' else ''
             bot.send_message('-100' + str(p.chat_id),
-                             text=config['messages']['stop_poll_scheduled'].format(title=p.title, link=poll_link))
+                             text=config['messages']['stop_poll_scheduled'].format(title=p.title, link=poll_link),
+                             parse_mode='HTML')
             resp_text = config['messages']['stop_poll_title']
-            bot.edit_message('-100' + str(p.chat_id), p.poll_id,
-                             text=resp_text + get_poll_text(p))
+            bot.edit_message('-100' + str(p.chat_id), p.poll_id, text=resp_text + get_poll_text(p), parse_mode='HTML')
         else:
             i += 1
 
