@@ -21,13 +21,14 @@ def get_poll_text(p: Poll) -> str:
 
     voted_user_dict = {}
     chat_id = '-100' + str(p.chat_id)
-    for user_id in voted_user_set:
-        try:
-            user = bot.get_chat_member(chat_id, user_id)
-        except catbot.UserNotFoundError:
-            voted_user_dict[user_id] = user_id
-        else:
-            voted_user_dict[user_id] = user.name
+    if (p.open and not p.anonymous_open) or (not p.open and not p.anonymous_closed):
+        for user_id in voted_user_set:
+            try:
+                user = bot.get_chat_member(chat_id, user_id)
+            except catbot.UserNotFoundError:
+                voted_user_dict[user_id] = user_id
+            else:
+                voted_user_dict[user_id] = user.name
 
     output = config['messages']['poll'].format(title=p.title, start_time=start_time, end_time=end_time,
                                                total=total_votes)
