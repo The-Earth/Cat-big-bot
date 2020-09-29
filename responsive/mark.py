@@ -21,7 +21,7 @@ def mark(msg: catbot.Message):
         return
     reply_to_id = msg.reply_to_message.id
 
-    comment = msg.text.lstrip('/mark')
+    comment = msg.html_formatted_text.lstrip('/mark')
 
     if str(msg.chat.id) not in mark_rec.keys():
         mark_rec[str(msg.chat.id)] = [{'id': reply_to_id, 'comment': comment}]
@@ -49,7 +49,8 @@ def list_marked(msg: catbot.Message):
         text = ''
         for record in mark_rec[str(msg.chat.id)]:
             text += f'{msg.chat.link}/{record["id"]} {record["comment"]}\n'
-        bot.send_message(msg.chat.id, text=text, reply_to_message_id=msg.id, disable_web_page_preview=True)
+        bot.send_message(msg.chat.id, text=text, reply_to_message_id=msg.id, disable_web_page_preview=True,
+                         parse_mode='HTML')
 
 
 @trusted

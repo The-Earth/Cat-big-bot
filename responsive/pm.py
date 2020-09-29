@@ -13,7 +13,7 @@ def pass_on_cri(msg: catbot.Message) -> bool:
 
 def pass_on(msg: catbot.Message):
     from_username = '@' + msg.from_.username if msg.from_.username != '' else 'No username'
-    text = msg.text.lstrip('/pass ')
+    text = msg.html_formatted_text.lstrip('/pass ')
     try:
         bot.send_message(chat_id=config['operator_id'],
                          text=config['messages']['pass_on_new_msg_to_op'].format(from_id=msg.from_.id,
@@ -33,14 +33,16 @@ def reply_cri(msg: catbot.Message) -> bool:
 
 
 def reply(msg: catbot.Message):
-    text = msg.text.lstrip('/reply ')
+    text = msg.html_formatted_text.lstrip('/reply ')
     to_id = text.split(' ')[0]
     content = ' '.join(text.split(' ')[1:])
     try:
-        bot.send_message(chat_id=to_id, text=config['messages']['pass_on_reply_from_op'].format(content=content))
+        bot.send_message(chat_id=int(to_id), text=config['messages']['pass_on_reply_from_op'].format(content=content),
+                         parse_mode='HTML')
     except catbot.ChatNotFoundError:
-        bot.send_message(chat_id=config['operator_id'],
-                         text=config['messages']['pass_on_reply_invalid_id'])
+        bot.send_message(chat_id=config['operator_id'], text=config['messages']['pass_on_reply_invalid_id'])
+    except ValueError:
+        bot.send_message(chat_id=config['operator_id'], text=config['messages']['pass_on_reply_invalid_id'])
     except catbot.APIError:
         bot.send_message(chat_id=config['operator_id'], text=config['messages']['pass_on_sending_failed'])
         raise
