@@ -42,7 +42,7 @@ def get_poll_text(p: Poll) -> str:
 
         if (p.open and p.count_open) or (not p.open):
             proportion = len(option['user']) / total_votes if total_votes != 0 else 0
-            output += f'-------- {len(option["user"])}, {proportion * 100:.1f}%\n'
+            output += f'-------- {len(option["user"])} 人 / {proportion * 100:.1f}%\n'
 
         output += '\n'
 
