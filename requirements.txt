@@ -1,0 +1,3 @@
+requests~=2.24.0
+parsedatetime~=2.6
+sseclient~=0.0.27
