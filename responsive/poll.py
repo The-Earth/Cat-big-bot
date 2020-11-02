@@ -283,7 +283,7 @@ def start_poll(query: catbot.CallbackQuery):
 
     poll_msg: catbot.Message = bot.send_message(query.msg.chat.id, text=get_poll_text(p), reply_markup=keyboard,
                                                 reply_to_message_id=query.msg.id, parse_mode='HTML')
-    bot.edit_message(query.msg.chat.id, query.msg.id, text=query.msg.text)
+    bot.edit_message(query.msg.chat.id, query.msg.id, text=p.title, parse_mode='HTML')
     bot.answer_callback_query(query.id, text=config['messages']['start_poll_answer'])
 
     p.poll_id = poll_msg.id
@@ -319,7 +319,8 @@ def abort_poll(query: catbot.CallbackQuery):
         bot.answer_callback_query(query.id, text=config['messages']['start_poll_not_found'])
         return
 
-    bot.edit_message(query.msg.chat.id, query.msg.id, text=config['messages']['abort_poll_title'] + query.msg.text)
+    bot.edit_message(query.msg.chat.id, query.msg.id, text=config['messages']['abort_poll_title'] + p.title,
+                     parse_mode='HTML')
     bot.answer_callback_query(query.id, text=config['messages']['abort_poll_answer'])
 
     rec['poll'] = poll_list
