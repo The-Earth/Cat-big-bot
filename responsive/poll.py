@@ -448,7 +448,7 @@ def stop_poll_scheduled():
             poll_link = chat_link + f'/{p.poll_id}' if chat_link != '' else ''
             bot.send_message('-100' + str(p.chat_id),
                              text=config['messages']['stop_poll_scheduled'].format(title=p.title, link=poll_link),
-                             parse_mode='HTML')
+                             parse_mode='HTML', reply_to_message_id=p.poll_id)
             resp_text = config['messages']['stop_poll_title']
             bot.edit_message('-100' + str(p.chat_id), p.poll_id, text=resp_text + get_poll_text(p), parse_mode='HTML')
         else:
