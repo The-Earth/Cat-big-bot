@@ -76,8 +76,8 @@ def set_channel_helper_cri(msg: catbot.Message) -> bool:
 
 def set_channel_helper(msg: catbot.Message):
     with t_lock:
-        helper_set, rec = record_empty_test('channel_helper', set)
-        helper_set.add(msg.chat.id)
+        helper_set, rec = record_empty_test('channel_helper', list)
+        helper_set.append(msg.chat.id)
         rec['channel_helper'] = helper_set
         json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
 
@@ -90,7 +90,7 @@ def channel_helper_cri(msg: catbot.Message) -> bool:
 
 def channel_helper(msg: catbot.Message):
     with t_lock:
-        helper_set, rec = record_empty_test('channel_helper', set)
+        helper_set, rec = record_empty_test('channel_helper', list)
 
     if msg.chat.id not in helper_set:
         return
@@ -100,6 +100,7 @@ def channel_helper(msg: catbot.Message):
             try:
                 bot.api('unbanChatMember', {'chat_id': msg.chat.id, 'user_id': new_member.id})
                 bot.api('deleteMessage', {'chat_id': msg.chat.id, 'message_id': msg.id})
+                bot.api('deleteMessage', {'chat_id': msg.chat.id, 'message_id': msg.id + 1})
             except catbot.InsufficientRightError:
                 pass
             except catbot.UserNotFoundError:
@@ -115,7 +116,7 @@ def unset_channel_helper_cri(msg: catbot.Message) -> bool:
 
 def unset_channel_helper(msg: catbot.Message):
     with t_lock:
-        helper_set, rec = record_empty_test('channel_helper', set)
+        helper_set, rec = record_empty_test('channel_helper', list)
         if msg.chat.id in helper_set:
             helper_set.remove(msg.chat.id)
         rec['channel_helper'] = helper_set
