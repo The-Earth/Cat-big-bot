@@ -50,3 +50,5 @@ if __name__ == '__main__':
             bot.start()
         except KeyboardInterrupt:
             break
+        except:
+            pass
