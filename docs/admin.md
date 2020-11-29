@@ -1,8 +1,13 @@
 # Admin
 
-admin 用户由机器人操作者授权，是可以管理[投票](poll.md)的用户（和 Telegram 群组的 admin 无关）。
+admin 用户由机器人操作者授权，是可以管理较高级功能的用户（和 Telegram 群组的 admin 无关）。
 
-## 权限
+## 可管理的功能
+
+* [投票](poll.md)
+* [频道讨论群辅助](channel_helper.md)
+
+## 权限列表
 * 可以使用 [trusted](trusted.md) 用户可使用的指令
 * 可以使用 [voter](voter.md) 用户可使用的指令
 * 于群组中可以使用：
@@ -13,6 +18,8 @@ admin 用户由机器人操作者授权，是可以管理[投票](poll.md)的用
     * [点按开始投票按钮](poll.md)
     * [点按取消投票按钮](poll.md)
     * [点按关闭投票按钮](poll.md)
+    * [`/set_channel_helper`](channel_helper.md)
+    * [`/unset_channel_helper`](channel_helper.md)
 
 ## 权限管理指令
 

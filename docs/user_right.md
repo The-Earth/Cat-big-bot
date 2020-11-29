@@ -48,6 +48,8 @@
         * [点按开始投票按钮](poll.md)
         * [点按取消投票按钮](poll.md)
         * [点按结束投票按钮](poll.md)
+        * [`/set_channel_helper`](channel_helper.md)
+        * [`/unset_channel_helper`](channel_helper.md)
 * [voter](voter.md) 用户
     * 于群组中可以使用：
         * [点按投票选项](poll.md)
