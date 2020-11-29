@@ -35,14 +35,16 @@ def channel_helper(msg: catbot.Message):
     for new_member in msg.new_chat_members:
         if new_member.id == msg.from_.id:
             try:
-                bot.api('unbanChatMember', {'chat_id': msg.chat.id, 'user_id': new_member.id})
-                bot.api('deleteMessage', {'chat_id': msg.chat.id, 'message_id': msg.id})
-                bot.api('deleteMessage', {'chat_id': msg.chat.id, 'message_id': msg.id + 1})
+                bot.kick_chat_member(msg.chat.idnew_member.id, no_ban=True)
+                bot.delete_message(msg.chat.id, msg.id)
+                bot.delete_message(msg.chat.id, msg.id + 1)
             except catbot.InsufficientRightError:
                 pass
             except catbot.UserNotFoundError:
                 pass
             except catbot.RestrictAdminError:
+                pass
+            except catbot.DeleteMessageError:
                 pass
 
 
