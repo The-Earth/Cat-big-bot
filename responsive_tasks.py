@@ -36,6 +36,9 @@ bot.add_query_task(start_poll_cri, start_poll)
 bot.add_query_task(abort_poll_cri, abort_poll)
 bot.add_query_task(vote_cri, vote)
 bot.add_query_task(stop_poll_cri, stop_poll)
+bot.add_msg_task(set_channel_helper_cri, set_channel_helper)
+bot.add_msg_task(channel_helper_cri, channel_helper)
+bot.add_msg_task(unset_channel_helper_cri, unset_channel_helper)
 
 if __name__ == '__main__':
     multiprocessing.freeze_support()

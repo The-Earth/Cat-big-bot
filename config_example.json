@@ -67,6 +67,8 @@
     "stop_poll_button": "结束投票",
     "stop_poll_title": "--------投票已结束--------\n",
     "vote_poll_stopped": "投票已结束",
-    "stop_poll_scheduled": "【投票】《{title}》已结束\n{link}"
+    "stop_poll_scheduled": "【投票】《{title}》已结束\n{link}",
+    "set_channel_helper_succ": "本群组已设置为频道讨论辅助群组，将自动踢出主动入群者。",
+    "unset_channel_helper_succ": "本群组已不再是频道讨论辅助群组，群员可自由出入。"
   }
 }
