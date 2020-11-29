@@ -7,6 +7,7 @@ from responsive.new_pages import *
 from responsive.pm import *
 from responsive.poll import *
 from responsive.trusted_user import *
+from responsive.channel_helper import *
 
 bot.add_msg_task(get_user_id_cri, get_user_id)
 bot.add_msg_task(get_chat_id_cri, get_chat_id)
