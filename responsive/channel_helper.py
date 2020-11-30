@@ -35,7 +35,7 @@ def channel_helper(msg: catbot.Message):
     for new_member in msg.new_chat_members:
         if new_member.id == msg.from_.id:
             try:
-                bot.kick_chat_member(msg.chat.idnew_member.id, no_ban=True)
+                bot.kick_chat_member(msg.chat.id, new_member.id, no_ban=True)
                 bot.delete_message(msg.chat.id, msg.id)
                 bot.delete_message(msg.chat.id, msg.id + 1)
             except catbot.InsufficientRightError:
