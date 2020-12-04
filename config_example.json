@@ -13,7 +13,7 @@
     "pass_on_reply_from_op": "主人回复：",
     "pass_on_reply_invalid": "回复失败。回复格式：/reply_<user id> [reply message]",
     "pass_on_reply_succ": "消息已回复至{to_id}",
-    "start": "要私聊主人，使用 /pass 加上您想说的话，暂无法转传图片。其他功能请使用 /help 查看帮助。",
+    "start": "要私聊主人，请直接对我发送消息。其他功能请使用 /help 查看帮助。",
     "help": "https://github.com/The-Earth/Cat-big-bot",
     "mark_private": "/mark 相关功能只能在有入群链接的群组中使用。",
     "mark_empty_reply": "请在使用 /mark 的同时回复您想要标记的消息。",
