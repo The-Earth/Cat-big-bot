@@ -8,19 +8,18 @@ from responsive import record_empty_test, command_detector
 
 @blocked
 def pass_on_cri(msg: catbot.Message) -> bool:
-    return command_detector('/pass', msg) and msg.chat.type == 'private'
+    return not msg.text.startswith('/') and msg.chat.type == 'private' and msg.chat.id != config['operator_id']
 
 
 def pass_on(msg: catbot.Message):
     from_username = '@' + msg.from_.username if msg.from_.username != '' else 'No username'
-    text = msg.html_formatted_text.lstrip('/pass ')
     try:
         bot.send_message(chat_id=config['operator_id'],
                          text=config['messages']['pass_on_new_msg_to_op'].format(from_id=msg.from_.id,
                                                                                  from_name=msg.from_.name,
-                                                                                 from_username=from_username,
-                                                                                 text=text),
+                                                                                 from_username=from_username),
                          parse_mode='HTML')
+        bot.forward_message(from_chat_id=msg.chat.id, to_chat_id=config['operator_id'], msg_id=msg.id)
     except catbot.APIError:
         bot.send_message(chat_id=msg.from_.id, text=config['messages']['pass_on_sending_failed'])
         raise
@@ -29,23 +28,23 @@ def pass_on(msg: catbot.Message):
 
 
 def reply_cri(msg: catbot.Message) -> bool:
-    return command_detector('/reply', msg) and msg.chat.id == config['operator_id']
+    return msg.text.startswith('/reply_') and msg.chat.id == config['operator_id']
 
 
 def reply(msg: catbot.Message):
-    text = msg.html_formatted_text.lstrip('/reply ')
-    to_id = text.split(' ')[0]
-    content = ' '.join(text.split(' ')[1:])
+    if not msg.reply:
+        bot.send_message(config['operator_id'], text=config['messages']['pass_on_reply_invalid'])
+        return
+    to_id = msg.text.split(' ')[0].split('_')[1]
     try:
-        bot.send_message(chat_id=int(to_id), text=config['messages']['pass_on_reply_from_op'].format(content=content),
-                         parse_mode='HTML')
+        bot.send_message(chat_id=int(to_id), text=config['messages']['pass_on_reply_from_op'])
+        bot.forward_message(from_chat_id=config['operator_id'], to_chat_id=int(to_id), msg_id=msg.reply_to_message.id)
     except catbot.ChatNotFoundError:
-        bot.send_message(chat_id=config['operator_id'], text=config['messages']['pass_on_reply_invalid_id'])
+        bot.send_message(chat_id=config['operator_id'], text=config['messages']['pass_on_sending_failed'])
     except ValueError:
-        bot.send_message(chat_id=config['operator_id'], text=config['messages']['pass_on_reply_invalid_id'])
+        bot.send_message(chat_id=config['operator_id'], text=config['messages']['pass_on_reply_invalid'])
     except catbot.APIError:
         bot.send_message(chat_id=config['operator_id'], text=config['messages']['pass_on_sending_failed'])
-        raise
     else:
         bot.send_message(chat_id=config['operator_id'],
                          text=config['messages']['pass_on_reply_succ'].format(to_id=to_id))
