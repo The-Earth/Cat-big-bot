@@ -19,17 +19,18 @@ def command_detector(cmd: str, msg: catbot.Message) -> bool:
         return False
 
 
-def record_empty_test(key: str, data_type):
+def record_empty_test(key: str, data_type, file=config['record']):
     """
     :param key: Name of the data you want in record file
     :param data_type: Type of the data. For example, if it is trusted user list, data_type will be list.
+    :param file: Control the file to read as record
     :return: Returns a tuple. The first element is the data you asked for. The second is the deserialized record file.
     """
     try:
-        rec = json.load(open(config['record'], 'r', encoding='utf-8'))
+        rec = json.load(open(file, 'r', encoding='utf-8'))
     except FileNotFoundError:
         record_list, rec = data_type(), {}
-        json.dump({key: record_list}, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+        json.dump({key: record_list}, open(file, 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
     else:
         if key in rec.keys():
             record_list = rec[key]

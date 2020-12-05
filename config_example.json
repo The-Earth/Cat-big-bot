@@ -6,6 +6,7 @@
   },
   "operator_id": 987654321,
   "record": "record.json",
+  "ac_record": "ac.json",
   "messages": {
     "pass_on_new_msg_to_op": "收到新消息，来自<a href=\"tg://user?id={from_id}\">{from_name}</a> (ID: {from_id}, {from_username}) \n Reply with /reply_{from_id}",
     "pass_on_sending_failed": "发送失败。",
@@ -53,8 +54,8 @@
     "set_admin_prompt": "用 /set_admin 回复需要列为管理员的用户，或使用 /set_admin 用户ID 用户ID ... 。",
     "set_admin_failed": "未能新增管理员，用户ID错误或所指定的用户已在管理员列表中。",
     "set_admin_succ": "下列用户已成为管理员：\n",
-    "init_poll_failed": "格式错误。启动投票的格式为：/init_poll -n [标题] -o ![选项一] ![选项二] ... -t [时长]\n默认设置：全程不匿名，投票期间不显示票数，单选\n可附加选项：\n-ao 投票期间匿名\n-ac 投票关闭后匿名\n-c 投票期间显示各选项票数\n-m 可多选",
-    "init_poll_succ": "投票已创建。\n标题：{title}\n投票规则：\n投票时长：{last}\n投票期间匿名：{anon_open}\n投票关闭后匿名：{anon_closed}\n投票期间显示票数：{count_open}\n多选：{multiple}",
+    "init_poll_failed": "格式错误。启动投票的格式为：/init_poll -n [标题] -o ![选项一] ![选项二] ... -t [时长]\n默认设置：全程不匿名，投票期间不显示票数，单选\n可附加选项：\n-ao 投票期间匿名\n-ac 投票关闭后匿名\n-c 投票期间显示各选项票数\n-m 可多选\n-p [1或2或3] 设置投票权限",
+    "init_poll_succ": "投票已创建。\n标题：{title}\n投票规则如下：\n\n投票时长：{last}\n投票期间匿名：{anon_open}\n投票关闭后匿名：{anon_closed}\n投票期间显示票数：{count_open}\n多选：{multiple}\n投票权限：{privilege}",
     "start_poll_button": "开始投票",
     "start_poll_answer": "投票已开始",
     "abort_poll_button": "取消投票",
@@ -64,6 +65,11 @@
     "start_poll_already": "投票已开始，见 {url}",
     "vote_received": "已收到您的投票",
     "vote_ineligible": "您没有投票权",
+    "vote_privilege": {
+      "1": "具有投票权者",
+      "2": "具有投票权者、于 AC 群通过验证者",
+      "3": "任何人"
+    },
     "stop_poll_button": "结束投票",
     "stop_poll_title": "--------投票已结束--------\n",
     "vote_poll_stopped": "投票已结束",

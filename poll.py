@@ -21,6 +21,7 @@ class Poll:
         self.init_id = id_
         self.poll_id = 0
         self.chat_id = chat_id
+        self.privilege_level = 1
 
     def start(self):
         if self.open:
@@ -76,5 +77,6 @@ class Poll:
         obj.anonymous_closed = data['anonymous_closed']
         obj.count_open = data['count_open']
         obj.multiple = data['multiple']
+        obj.privilege_level = data['privilege_level']
 
         return obj

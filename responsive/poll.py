@@ -1,9 +1,9 @@
 import json
 import time
 
+import catbot
 import parsedatetime
 
-import catbot
 from poll import Poll
 from responsive import admin
 from responsive import bot, config, t_lock, p_lock
@@ -219,6 +219,18 @@ def init_poll(msg: catbot.Message):
         elif user_input_token[i] == '-m':
             p.multiple = True
             i += 1
+        elif user_input_token[i] == '-p':
+            i += 1
+            while i < len(user_input_token) and not user_input_token[i].startswith('-'):
+                try:
+                    p.privilege_level = int(user_input_token[i])
+                except ValueError:
+                    bot.send_message(msg.chat.id, text=config['messages']['init_poll_failed'],
+                                     reply_to_message_id=msg.id)
+                    return
+                else:
+                    i += 1
+                    break
         else:  # format error
             bot.send_message(msg.chat.id, text=config['messages']['init_poll_failed'], reply_to_message_id=msg.id)
             return
@@ -238,7 +250,9 @@ def init_poll(msg: catbot.Message):
                                                             anon_open=p.anonymous_open,
                                                             anon_closed=p.anonymous_closed,
                                                             count_open=p.count_open,
-                                                            multiple=p.multiple)
+                                                            multiple=p.multiple,
+                                                            privilege=config['messages']['vote_privilege'][
+                                                                str(p.privilege_level)])
     start_button = catbot.InlineKeyboardButton(config['messages']['start_poll_button'],
                                                callback_data=f'vote_{p.chat_id}_{p.init_id}_start')
     abort_button = catbot.InlineKeyboardButton(config['messages']['abort_poll_button'],
@@ -335,14 +349,13 @@ def vote(query: catbot.CallbackQuery):
     callback_token = query.data.split('_')
     voter_dict = record_empty_test('voter', dict)[0]
     admin_list = record_empty_test('admin', list)[0]
+    ac_list = record_empty_test('ac', list, file=config['ac_record'])[0]
 
     if str(query.msg.chat.id) in voter_dict.keys():
         voter_list = voter_dict[str(query.msg.chat.id)]
     else:
         voter_list = []
-    if query.from_.id not in voter_list and query.from_.id not in admin_list:
-        bot.answer_callback_query(query.id, text=config['messages']['vote_ineligible'])
-        return
+
     if not len(callback_token) == 4:
         bot.answer_callback_query(query.id)
         return
@@ -360,6 +373,21 @@ def vote(query: catbot.CallbackQuery):
             p = Poll.from_json(poll_list[i])
 
             if p.chat_id == callback_chat_id and p.init_id == callback_init_id and p.open:
+                # privilege check
+                if p.privilege_level == 1 and query.from_.id not in voter_list and query.from_.id not in admin_list:
+                    bot.answer_callback_query(query.id, text=config['messages']['vote_ineligible'])
+                    return
+                if p.privilege_level == 2 and query.from_.id not in voter_list and query.from_.id not in admin_list:
+                    for user in ac_list:
+                        if user['telegram_id'] == query.from_.id and not user['confirmed']:
+                            bot.answer_callback_query(query.id, text=config['messages']['vote_ineligible'])
+                            return
+                        if user['telegram_id'] == query.from_.id and user['confirmed']:
+                            break
+                    else:
+                        bot.answer_callback_query(query.id, text=config['messages']['vote_ineligible'])
+                        return
+
                 p.vote(query.from_.id, choice)
 
                 poll_list[i] = p.to_json()
@@ -439,7 +467,8 @@ def stop_poll_scheduled():
                                  text=config['messages']['stop_poll_scheduled'].format(title=p.title, link=poll_link),
                                  parse_mode='HTML', reply_to_message_id=p.poll_id)
                 resp_text = config['messages']['stop_poll_title']
-                bot.edit_message('-100' + str(p.chat_id), p.poll_id, text=resp_text + get_poll_text(p), parse_mode='HTML')
+                bot.edit_message('-100' + str(p.chat_id), p.poll_id, text=resp_text + get_poll_text(p),
+                                 parse_mode='HTML')
             else:
                 i += 1
 
