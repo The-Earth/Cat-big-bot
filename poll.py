@@ -19,7 +19,7 @@ class Poll:
         # if the poll allows multiple choices
         self.multiple = False
         self.init_id = id_
-        self.poll_id = 0
+        self.poll_id = 1
         self.chat_id = chat_id
         self.privilege_level = 1
 
