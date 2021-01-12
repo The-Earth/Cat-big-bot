@@ -13,7 +13,7 @@ def mark_cri(msg: catbot.Message) -> bool:
 def mark(msg: catbot.Message):
     mark_rec, rec = record_empty_test('mark', dict)
 
-    if msg.chat.link == '':
+    if not str(msg.chat.id).startswith('-100'):
         bot.send_message(msg.chat.id, text=config['messages']['mark_private'], reply_to_message_id=msg.id)
         return
     if not msg.reply:
@@ -39,7 +39,7 @@ def list_marked_cri(msg: catbot.Message) -> bool:
 def list_marked(msg: catbot.Message):
     mark_rec, rec = record_empty_test('mark', dict)
 
-    if msg.chat.link == '':
+    if not str(msg.chat.id).startswith('-100'):
         bot.send_message(msg.chat.id, text=config['messages']['mark_private'], reply_to_message_id=msg.id)
         return
 
@@ -48,7 +48,7 @@ def list_marked(msg: catbot.Message):
     else:
         text = ''
         for record in mark_rec[str(msg.chat.id)]:
-            text += f'{msg.chat.link}/{record["id"]} {record["comment"]}\n'
+            text += f't.me/c/{str(msg.chat.id).replace("-100", "")}/{record["id"]} {record["comment"]}\n'
         bot.send_message(msg.chat.id, text=text, reply_to_message_id=msg.id, disable_web_page_preview=True,
                          parse_mode='HTML')
 
@@ -61,7 +61,7 @@ def unmark_cri(msg: catbot.Message) -> bool:
 def unmark(msg: catbot.Message):
     mark_rec, rec = record_empty_test('mark', dict)
 
-    if msg.chat.link == '':
+    if not str(msg.chat.id).startswith('-100'):
         bot.send_message(msg.chat.id, text=config['messages']['mark_private'], reply_to_message_id=msg.id)
         return
     if str(msg.chat.id) not in mark_rec.keys() or len(mark_rec[str(msg.chat.id)]) == 0:
