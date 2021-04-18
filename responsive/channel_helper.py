@@ -37,7 +37,6 @@ def channel_helper(msg: catbot.Message):
             try:
                 bot.kick_chat_member(msg.chat.id, new_member.id, no_ban=True)
                 bot.delete_message(msg.chat.id, msg.id)
-                bot.delete_message(msg.chat.id, msg.id + 1)
             except catbot.InsufficientRightError:
                 pass
             except catbot.UserNotFoundError:
@@ -46,6 +45,25 @@ def channel_helper(msg: catbot.Message):
                 pass
             except catbot.DeleteMessageError:
                 pass
+
+
+def channel_helper_left_msg_deletion_cri(msg: catbot.Message) -> bool:
+    return hasattr(msg, 'left_chat_member') and msg.from_.id == bot.id
+
+
+def channel_helper_left_msg_deletion(msg: catbot.Message):
+    with t_lock:
+        helper_set, rec = record_empty_test('channel_helper', list)
+
+    if msg.chat.id not in helper_set:
+        return
+
+    try:
+        bot.delete_message(msg.chat.id, msg.id)
+    except catbot.InsufficientRightError:
+        pass
+    except catbot.DeleteMessageError:
+        pass
 
 
 @admin
