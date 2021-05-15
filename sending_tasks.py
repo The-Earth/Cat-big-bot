@@ -66,7 +66,7 @@ def sending_trials(chat_id: int, title: str, user: str):
                     new_pages_rec.pop(str(chat_id))
                     json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
                 except KeyError:
-                    pass
+                    break
             else:
                 print(f'Retrying sending {title} to {chat_id} ... {i + 1}')
                 continue
