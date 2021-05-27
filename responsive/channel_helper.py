@@ -21,30 +21,33 @@ def set_channel_helper(msg: catbot.Message):
     bot.send_message(msg.chat.id, text=config['messages']['set_channel_helper_succ'], reply_to_message_id=msg.id)
 
 
-def channel_helper_cri(msg: catbot.Message) -> bool:
-    return hasattr(msg, 'new_chat_members')
+def channel_helper_cri(msg: catbot.ChatMemberUpdate) -> bool:
+    if msg.old_chat_member.status == 'left' and msg.new_chat_member.status == 'member':
+        return True
+    elif msg.old_chat_member.status == msg.new_chat_member.status == 'restricted':
+        return not msg.old_chat_member.is_member and msg.new_chat_member.is_member
+    else:
+        return False
 
 
-def channel_helper(msg: catbot.Message):
+def channel_helper(msg: catbot.ChatMemberUpdate):
     with t_lock:
         helper_set, rec = record_empty_test('channel_helper', list)
 
     if msg.chat.id not in helper_set:
         return
 
-    for new_member in msg.new_chat_members:
-        if new_member.id == msg.from_.id:
-            try:
-                bot.kick_chat_member(msg.chat.id, new_member.id, no_ban=True)
-                bot.delete_message(msg.chat.id, msg.id)
-            except catbot.InsufficientRightError:
-                pass
-            except catbot.UserNotFoundError:
-                pass
-            except catbot.RestrictAdminError:
-                pass
-            except catbot.DeleteMessageError:
-                pass
+    if msg.from_.id != msg.new_chat_member.id:
+        return
+
+    try:
+        bot.kick_chat_member(msg.chat.id, msg.new_chat_member.id, no_ban=True)
+    except catbot.InsufficientRightError:
+        pass
+    except catbot.UserNotFoundError:
+        pass
+    except catbot.RestrictAdminError:
+        pass
 
 
 def channel_helper_left_msg_deletion_cri(msg: catbot.Message) -> bool:
