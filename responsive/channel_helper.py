@@ -6,6 +6,7 @@ from responsive import admin
 from responsive import bot, config, t_lock
 from responsive import command_detector, record_empty_test
 
+
 @admin
 def set_channel_helper_cri(msg: catbot.Message) -> bool:
     return command_detector('/set_channel_helper', msg) and msg.chat.type == 'supergroup'
@@ -50,15 +51,21 @@ def channel_helper(msg: catbot.ChatMemberUpdate):
         pass
 
 
-def channel_helper_left_msg_deletion_cri(msg: catbot.Message) -> bool:
-    return hasattr(msg, 'left_chat_member') and msg.from_.id == bot.id
+def channel_helper_msg_deletion_cri(msg: catbot.Message) -> bool:
+    return hasattr(msg, 'left_chat_member') or hasattr(msg, 'new_chat_members')
 
 
-def channel_helper_left_msg_deletion(msg: catbot.Message):
+def channel_helper_msg_deletion(msg: catbot.Message):
     with t_lock:
         helper_set, rec = record_empty_test('channel_helper', list)
 
     if msg.chat.id not in helper_set:
+        return
+
+    if hasattr(msg, 'left_chat_member') and msg.from_.id != bot.id:
+        return
+
+    if hasattr(msg, 'new_chat_members') and msg.new_chat_members[0].id != msg.from_.id:
         return
 
     try:
