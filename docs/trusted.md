@@ -9,6 +9,16 @@ trusted 用户是受信任的用户，可以执行一些易被滥用的指令。
     * [`/unmark`](mark.md)
     * `/set_trusted`
     * `/list_trusted`
+    * [`/set_voter`](voter.md)
+    * [`/list_voter`](voter.md)
+    * [`/unset_voter`](voter.md)
+    * [`/init_poll`](poll.md)
+    * [点按开始投票按钮](poll.md)
+    * [点按取消投票按钮](poll.md)
+    * [点按关闭投票按钮](poll.md)
+    * [`/set_channel_helper`](channel_helper.md)
+    * [`/unset_channel_helper`](channel_helper.md)
+
 * 于私聊中可以使用：
     * `/set_trusted`
 

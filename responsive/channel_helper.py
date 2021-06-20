@@ -2,12 +2,12 @@ import json
 
 import catbot
 
-from responsive import admin
+from responsive import trusted
 from responsive import bot, config, t_lock
 from responsive import command_detector, record_empty_test
 
 
-@admin
+@trusted
 def set_channel_helper_cri(msg: catbot.Message) -> bool:
     return command_detector('/set_channel_helper', msg) and msg.chat.type == 'supergroup'
 
@@ -76,7 +76,7 @@ def channel_helper_msg_deletion(msg: catbot.Message):
         pass
 
 
-@admin
+@trusted
 def unset_channel_helper_cri(msg: catbot.Message) -> bool:
     return command_detector('/unset_channel_helper', msg) and msg.chat.type == 'supergroup'
 

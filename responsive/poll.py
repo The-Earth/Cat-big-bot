@@ -5,7 +5,7 @@ import catbot
 import parsedatetime
 
 from poll import Poll
-from responsive import admin
+from responsive import trusted
 from responsive import bot, config, t_lock, p_lock
 from responsive import record_empty_test, command_detector
 
@@ -49,7 +49,7 @@ def get_poll_text(p: Poll) -> str:
     return output
 
 
-@admin
+@trusted
 def set_voter_cri(msg: catbot.Message) -> bool:
     return command_detector('/set_voter', msg) and msg.chat.type != 'private'
 
@@ -90,7 +90,7 @@ def set_voter(msg: catbot.Message):
             bot.send_message(msg.chat.id, text=reply_text, reply_to_message_id=msg.id)
 
 
-@admin
+@trusted
 def list_voter_cri(msg: catbot.Message) -> bool:
     return command_detector('/list_voter', msg) and msg.chat.type != 'private'
 
@@ -121,7 +121,7 @@ def list_voter(msg: catbot.Message):
     bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id)
 
 
-@admin
+@trusted
 def unset_voter_cri(msg: catbot.Message) -> bool:
     return command_detector('/unset_voter', msg)
 
@@ -162,7 +162,7 @@ def unset_voter(msg: catbot.Message):
             bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id)
 
 
-@admin
+@trusted
 def init_poll_cri(msg: catbot.Message) -> bool:
     return command_detector('/init_poll', msg) and msg.chat.type != 'private'
 
@@ -261,7 +261,7 @@ def init_poll(msg: catbot.Message):
     bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id, reply_markup=keyboard, parse_mode='HTML')
 
 
-@admin
+@trusted
 def start_poll_cri(query: catbot.CallbackQuery) -> bool:
     return query.data.startswith('vote_') and query.data.endswith('_start')
 
@@ -307,7 +307,7 @@ def start_poll(query: catbot.CallbackQuery):
         json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
 
 
-@admin
+@trusted
 def abort_poll_cri(query: catbot.CallbackQuery) -> bool:
     return query.data.startswith('vote_') and query.data.endswith('_abort')
 
@@ -348,7 +348,6 @@ def vote_cri(query: catbot.CallbackQuery) -> bool:
 def vote(query: catbot.CallbackQuery):
     callback_token = query.data.split('_')
     voter_dict = record_empty_test('voter', dict)[0]
-    admin_list = record_empty_test('admin', list)[0]
     ac_list = record_empty_test('ac', list, file=config['ac_record'])[0]
 
     if str(query.msg.chat.id) in voter_dict.keys():
@@ -374,10 +373,10 @@ def vote(query: catbot.CallbackQuery):
 
             if p.chat_id == callback_chat_id and p.init_id == callback_init_id and p.open:
                 # privilege check
-                if p.privilege_level == 1 and query.from_.id not in voter_list and query.from_.id not in admin_list:
+                if p.privilege_level == 1 and query.from_.id not in voter_list:
                     bot.answer_callback_query(query.id, text=config['messages']['vote_ineligible'])
                     return
-                if p.privilege_level == 2 and query.from_.id not in voter_list and query.from_.id not in admin_list:
+                if p.privilege_level == 2 and query.from_.id not in voter_list:
                     for user in ac_list:
                         if user['telegram_id'] == query.from_.id and not user['confirmed']:
                             bot.answer_callback_query(query.id, text=config['messages']['vote_ineligible'])
@@ -413,7 +412,7 @@ def vote(query: catbot.CallbackQuery):
                 break
 
 
-@admin
+@trusted
 def stop_poll_cri(query: catbot.CallbackQuery) -> bool:
     return query.data.startswith('vote') and query.data.endswith('_stop')
 

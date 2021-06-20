@@ -30,16 +30,6 @@
         * [`/unmark`](mark.md)
         * [`/set_trusted`](trusted.md)
         * [`/list_trusted`](trusted.md)
-    * 于私聊中可以使用：
-        * [`/set_trusted`](trusted.md)
-* [blocked 用户](pm.md)
-    * 可以使用所有用户均可使用的指令，但
-    * 无法使用：
-        * [`/pass`](pm.md)
-* [admin](admin.md) 用户
-    * 可以使用 trusted 用户可使用的指令
-    * 可以使用 voter 用户可使用的指令
-    * 于群组中可以使用：
         * [`/set_voter`](voter.md)
         * [`/list_voter`](voter.md)
         * [`/unset_voter`](voter.md)
@@ -50,18 +40,20 @@
         * [点按结束投票按钮](poll.md)
         * [`/set_channel_helper`](channel_helper.md)
         * [`/unset_channel_helper`](channel_helper.md)
+    * 于私聊中可以使用：
+        * [`/set_trusted`](trusted.md)
+* [blocked 用户](pm.md)
+    * 可以使用所有用户均可使用的指令，但
+    * 无法使用：
+        * [`/pass`](pm.md)
 * [voter](voter.md) 用户
     * 于群组中可以使用：
         * [点按投票选项](poll.md)
 * operator （机器人操作者）
     * 可以使用所有用户均可使用的指令
     * 可以使用 trusted 用户可使用的指令
-    * 可以使用 admin 用户可使用的指令
-    * 于群组中可以使用：
-        * [`/set_admin`](admin.md)
     * 于私聊中可以使用：
         * [`/reply`](pm.md)
         * [`/block`](pm.md)
         * [`/unblock`](pm.md)
         * [`/list_blocked`](pm.md)
-        * [`/set_admin`](admin.md)

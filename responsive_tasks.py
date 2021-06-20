@@ -1,6 +1,5 @@
 import multiprocessing
 
-from responsive.admin_user import *
 from responsive.mark import *
 from responsive.misc import *
 from responsive.new_pages import *
@@ -31,7 +30,6 @@ bot.add_msg_task(unblock_private_cri, unblock_private)
 bot.add_msg_task(set_voter_cri, set_voter)
 bot.add_msg_task(list_voter_cri, list_voter)
 bot.add_msg_task(unset_voter_cri, unset_voter)
-bot.add_msg_task(set_admin_cri, set_admin)
 bot.add_msg_task(init_poll_cri, init_poll)
 bot.add_query_task(start_poll_cri, start_poll)
 bot.add_query_task(abort_poll_cri, abort_poll)
