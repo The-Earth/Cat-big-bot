@@ -21,7 +21,7 @@ class Poll:
         self.init_id = id_
         self.poll_id = 1
         self.chat_id = chat_id
-        self.privilege_level = 1
+        self.privilege_level = 3
 
     def start(self):
         if self.open:
