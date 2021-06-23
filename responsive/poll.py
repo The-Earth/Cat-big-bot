@@ -348,12 +348,13 @@ def vote_cri(query: catbot.CallbackQuery) -> bool:
 def vote(query: catbot.CallbackQuery):
     callback_token = query.data.split('_')
     voter_dict = record_empty_test('voter', dict)[0]
+    trusted_list = record_empty_test('trusted', list)[0]
     ac_list = record_empty_test('ac', list, file=config['ac_record'])[0]
 
     if str(query.msg.chat.id) in voter_dict.keys():
-        voter_list = voter_dict[str(query.msg.chat.id)]
+        voter_list = voter_dict[str(query.msg.chat.id)] + trusted_list
     else:
-        voter_list = []
+        voter_list = trusted_list
 
     if not len(callback_token) == 4:
         bot.answer_callback_query(query.id)
