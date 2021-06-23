@@ -76,19 +76,3 @@ def blocked(func):
         return func(*args, **kwargs)
 
     return wrapper
-
-
-def voter(func):
-    """
-    Similar to trusted, limit vote right to voters.
-    """
-
-    def wrapper(*args, **kwargs):
-        voter_list = record_empty_test('voter', list)[0]
-        msg = args[0]
-        if msg.from_.id in voter_list:
-            return func(*args, **kwargs)
-        else:
-            return False
-
-    return wrapper
