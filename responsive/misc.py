@@ -81,7 +81,7 @@ def raw_api(msg: catbot.Message):
     if len(msg_lines) != 1:
         for line in msg_lines[1:]:
             key = line.split()[0]
-            value = line.split()[1]
+            value = line.removeprefix(f'{key} ')
             try:
                 value = eval(value)
             except NameError as e:
