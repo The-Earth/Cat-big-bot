@@ -21,7 +21,10 @@ def mark(msg: catbot.Message):
         return
     reply_to_id = msg.reply_to_message.id
 
-    comment = msg.html_formatted_text.lstrip('/mark')
+    if msg.html_formatted_text.startswith(f'/mark@{bot.username}'):
+        comment = msg.html_formatted_text.removeprefix(f'/mark@{bot.username} ')
+    else:
+        comment = msg.html_formatted_text.removeprefix('/mark ')
 
     if str(msg.chat.id) not in mark_rec.keys():
         mark_rec[str(msg.chat.id)] = [{'id': reply_to_id, 'comment': comment}]
