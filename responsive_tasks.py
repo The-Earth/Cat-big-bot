@@ -39,6 +39,8 @@ bot.add_msg_task(set_channel_helper_cri, set_channel_helper)
 bot.add_member_status_task(channel_helper_cri, channel_helper)
 bot.add_msg_task(channel_helper_msg_deletion_cri, channel_helper_msg_deletion)
 bot.add_msg_task(unset_channel_helper_cri, unset_channel_helper)
+bot.add_msg_task(raw_api_cri, raw_api)
+
 
 if __name__ == '__main__':
     multiprocessing.freeze_support()

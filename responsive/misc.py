@@ -64,3 +64,38 @@ def get_permalink(msg: catbot.Message):
     for item in id_list:
         resp_text += f'<a href="tg://user?id={item}">{item}</a>\n'
     bot.send_message(msg.chat.id, text=resp_text, parse_mode='HTML', reply_to_message_id=msg.id)
+
+
+def raw_api_cri(msg: catbot.Message) -> bool:
+    return command_detector('/api', msg) and msg.from_.id == config['operator_id']
+
+
+def raw_api(msg: catbot.Message):
+    msg_lines = msg.text.split('\n')
+    if msg_lines[0].startswith(f'/api@{bot.username}'):
+        action = msg_lines[0].removeprefix(f'/api@{bot.username} ')
+    else:
+        action = msg_lines[0].removeprefix(f'/api ')
+
+    data = {}
+    if len(msg_lines) != 1:
+        for line in msg_lines[1:]:
+            key = line.split()[0]
+            value = line.split()[1]
+            try:
+                value = eval(value)
+            except NameError as e:
+                bot.send_message(msg.chat.id, text=config['messages']['api_data_error'].format(
+                    key=e.args[0].removeprefix("name '").removesuffix("' is not defined")
+                ))
+                return
+            else:
+                data[key] = value
+
+    try:
+        result = bot.api(action=action, data=data)
+    except catbot.APIError as e:
+        result = e.args[0]
+        bot.send_message(msg.chat.id, text=str(result))
+    else:
+        bot.send_message(msg.chat.id, text=str(result))

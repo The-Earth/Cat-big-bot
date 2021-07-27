@@ -1,4 +1,4 @@
-requests~=2.25.0
-parsedatetime~=2.6
-sseclient~=0.0.27
+requests
+parsedatetime
+sseclient
 git+https://github.com/The-Earth/catbot.git#egg=catbot
