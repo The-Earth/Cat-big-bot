@@ -73,6 +73,9 @@
     "stop_poll_scheduled": "【投票】《{title}》已结束",
     "set_channel_helper_succ": "本群组已设置为频道讨论辅助群组，将自动踢出主动入群者。",
     "unset_channel_helper_succ": "本群组已不再是频道讨论辅助群组，群员可自由出入。",
-    "api_data_error": "参数 {key} 处有误"
+    "api_data_error": "参数 {key} 处有误",
+    "set_show_joining_succ": "已设置由本机器人显示入群信息。",
+    "show_joining": "<a href=\"tg://user?id={user_id}\">{user_name}</a>加入群组。",
+    "unset_show_joining_succ": "已设置本机器人不显示入群信息。"
   }
 }

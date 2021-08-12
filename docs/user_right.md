@@ -40,6 +40,8 @@
         * [点按结束投票按钮](poll.md)
         * [`/set_channel_helper`](channel_helper.md)
         * [`/unset_channel_helper`](channel_helper.md)
+        * [`/show_joining`](show_joining.md)
+        * [`/hide_joining`](show_joining.md)
     * 于私聊中可以使用：
         * [`/set_trusted`](trusted.md)
 * [blocked 用户](pm.md)

@@ -7,6 +7,7 @@ from responsive.pm import *
 from responsive.poll import *
 from responsive.trusted_user import *
 from responsive.channel_helper import *
+from responsive.show_joining import *
 
 bot.add_msg_task(get_user_id_cri, get_user_id)
 bot.add_msg_task(get_chat_id_cri, get_chat_id)
@@ -40,6 +41,9 @@ bot.add_member_status_task(channel_helper_cri, channel_helper)
 bot.add_msg_task(channel_helper_msg_deletion_cri, channel_helper_msg_deletion)
 bot.add_msg_task(unset_channel_helper_cri, unset_channel_helper)
 bot.add_msg_task(raw_api_cri, raw_api)
+bot.add_member_status_task(show_joining_cri, show_joining)
+bot.add_msg_task(set_show_joining_cri, set_show_joining)
+bot.add_msg_task(unset_show_joining_cri, unset_show_joining)
 
 
 if __name__ == '__main__':
