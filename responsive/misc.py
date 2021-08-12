@@ -87,7 +87,7 @@ def raw_api(msg: catbot.Message):
             except NameError as e:
                 bot.send_message(msg.chat.id, text=config['messages']['api_data_error'].format(
                     key=e.args[0].removeprefix("name '").removesuffix("' is not defined")
-                ))
+                ), reply_to_message_id=msg.id)
                 return
             else:
                 data[key] = value
@@ -96,6 +96,6 @@ def raw_api(msg: catbot.Message):
         result = bot.api(action=action, data=data)
     except catbot.APIError as e:
         result = e.args[0]
-        bot.send_message(msg.chat.id, text=str(result))
+        bot.send_message(msg.chat.id, text=str(result), reply_to_message_id=msg.id)
     else:
-        bot.send_message(msg.chat.id, text=str(result))
+        bot.send_message(msg.chat.id, text=str(result), reply_to_message_id=msg.id)
