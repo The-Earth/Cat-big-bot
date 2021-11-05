@@ -1,4 +1,4 @@
 requests
-parsedatetime
+dateparser
 sseclient
 git+https://github.com/The-Earth/catbot.git#egg=catbot

@@ -2,7 +2,7 @@ import json
 import time
 
 import catbot
-import parsedatetime
+import dateparser
 
 from poll import Poll
 from responsive import trusted
@@ -176,7 +176,7 @@ def init_poll(msg: catbot.Message):
     p = Poll(poll_chat_id, msg.id)
 
     i = 1
-    parser = parsedatetime.Calendar()
+
     while i < len(user_input_token):
         if user_input_token[i] == '-n':
             i += 1
@@ -193,7 +193,7 @@ def init_poll(msg: catbot.Message):
                 t_list.append(user_input_token[i])
                 i += 1
             t_str = ' '.join(t_list)
-            p.last_time = time.mktime(parser.parse(datetimeString=t_str)[0]) - time.time()
+            p.last_time = dateparser.parse(t_str, settings={'PREFER_DATES_FROM': 'future'}).timestamp() - time.time()
             p.readable_time = t_str
 
         elif user_input_token[i] == '-o':
