@@ -54,7 +54,7 @@ def list_trusted(msg: catbot.Message):
     trusted_list, rec = record_empty_test('trusted', list)
 
     resp_list = []
-    bot.send_message(msg.chat.id, text=config['messages']['list_user_pre'], reply_to_message_id=msg.id)
+    bot.api('sendChatAction', {'chat_id': msg.chat.id, 'action': 'typing'})
     for trusted_id in trusted_list:
         try:
             trusted_user = bot.get_chat_member(msg.chat.id, trusted_id)

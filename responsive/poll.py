@@ -97,7 +97,7 @@ def list_voter_cri(msg: catbot.Message) -> bool:
 
 def list_voter(msg: catbot.Message):
     resp_list = []
-    bot.send_message(msg.chat.id, text=config['messages']['list_user_pre'], reply_to_message_id=msg.id)
+    bot.api('sendChatAction', {'chat_id': msg.chat.id, 'action': 'typing'})
     with t_lock:
         voter_dict, rec = record_empty_test('voter', dict)
         if str(msg.chat.id) in voter_dict.keys():
