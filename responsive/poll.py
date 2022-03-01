@@ -7,7 +7,6 @@ import dateparser
 from poll import Poll
 from responsive import trusted
 from responsive import bot, config, t_lock, p_lock
-from responsive import record_empty_test, command_detector
 
 
 def get_poll_text(p: Poll) -> str:
@@ -51,7 +50,7 @@ def get_poll_text(p: Poll) -> str:
 
 @trusted
 def set_voter_cri(msg: catbot.Message) -> bool:
-    return command_detector('/set_voter', msg) and msg.chat.type != 'private'
+    return bot.detect_command('/set_voter', msg) and msg.chat.type != 'private'
 
 
 def set_voter(msg: catbot.Message):
@@ -70,7 +69,7 @@ def set_voter(msg: catbot.Message):
                 except ValueError:
                     continue
     with t_lock:
-        voter_dict, rec = record_empty_test('voter', dict)
+        voter_dict, rec = bot.secure_record_fetch('voter', dict)
         if str(msg.chat.id) not in voter_dict.keys():
             voter_dict[str(msg.chat.id)] = []
         voter_set = set(voter_dict[str(msg.chat.id)])
@@ -92,14 +91,14 @@ def set_voter(msg: catbot.Message):
 
 @trusted
 def list_voter_cri(msg: catbot.Message) -> bool:
-    return command_detector('/list_voter', msg) and msg.chat.type != 'private'
+    return bot.detect_command('/list_voter', msg) and msg.chat.type != 'private'
 
 
 def list_voter(msg: catbot.Message):
     resp_list = []
     bot.api('sendChatAction', {'chat_id': msg.chat.id, 'action': 'typing'})
     with t_lock:
-        voter_dict, rec = record_empty_test('voter', dict)
+        voter_dict, rec = bot.secure_record_fetch('voter', dict)
         if str(msg.chat.id) in voter_dict.keys():
             for voter_id in voter_dict[str(msg.chat.id)]:
                 try:
@@ -123,12 +122,12 @@ def list_voter(msg: catbot.Message):
 
 @trusted
 def unset_voter_cri(msg: catbot.Message) -> bool:
-    return command_detector('/unset_voter', msg)
+    return bot.detect_command('/unset_voter', msg)
 
 
 def unset_voter(msg: catbot.Message):
     with t_lock:
-        voter_dict, rec = record_empty_test('voter', dict)
+        voter_dict, rec = bot.secure_record_fetch('voter', dict)
 
         user_input_token = msg.text.split()
         rm_voter_list = []
@@ -164,7 +163,7 @@ def unset_voter(msg: catbot.Message):
 
 @trusted
 def init_poll_cri(msg: catbot.Message) -> bool:
-    return command_detector('/init_poll', msg) and msg.chat.type != 'private'
+    return bot.detect_command('/init_poll', msg) and msg.chat.type != 'private'
 
 
 def init_poll(msg: catbot.Message):
@@ -240,7 +239,7 @@ def init_poll(msg: catbot.Message):
         return
 
     with t_lock:
-        poll_list, rec = record_empty_test('poll', list)
+        poll_list, rec = bot.secure_record_fetch('poll', list)
         poll_list.append(p.to_json())
         rec['poll'] = poll_list
         json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
@@ -276,7 +275,7 @@ def start_poll(query: catbot.CallbackQuery):
         return
 
     with t_lock:
-        poll_list, rec = record_empty_test('poll', list)
+        poll_list, rec = bot.secure_record_fetch('poll', list)
         for i in range(len(poll_list)):
             p = Poll.from_json(poll_list[i])
             if p.chat_id == cmd_chat_id and p.init_id == cmd_id:
@@ -322,7 +321,7 @@ def abort_poll(query: catbot.CallbackQuery):
         return
 
     with t_lock:
-        poll_list, rec = record_empty_test('poll', list)
+        poll_list, rec = bot.secure_record_fetch('poll', list)
         for i in range(len(poll_list)):
             p = Poll.from_json(poll_list[i])
             if p.chat_id == cmd_chat_id and p.init_id == cmd_id:
@@ -347,9 +346,9 @@ def vote_cri(query: catbot.CallbackQuery) -> bool:
 
 def vote(query: catbot.CallbackQuery):
     callback_token = query.data.split('_')
-    voter_dict = record_empty_test('voter', dict)[0]
-    trusted_list = record_empty_test('trusted', list)[0]
-    ac_list = record_empty_test('ac', list, file=config['ac_record'])[0]
+    voter_dict = bot.secure_record_fetch('voter', dict)[0]
+    trusted_list = bot.secure_record_fetch('trusted', list)[0]
+    ac_list = bot.secure_record_fetch('ac', list, file=config['ac_record'])[0]
 
     if str(query.msg.chat.id) in voter_dict.keys():
         voter_list = voter_dict[str(query.msg.chat.id)] + trusted_list
@@ -368,7 +367,7 @@ def vote(query: catbot.CallbackQuery):
         return
 
     with t_lock:
-        poll_list, rec = record_empty_test('poll', list)
+        poll_list, rec = bot.secure_record_fetch('poll', list)
         for i in range(len(poll_list)):
             p = Poll.from_json(poll_list[i])
 
@@ -431,7 +430,7 @@ def stop_poll(query: catbot.CallbackQuery):
         return
 
     with t_lock:
-        poll_list, rec = record_empty_test('poll', list)
+        poll_list, rec = bot.secure_record_fetch('poll', list)
         for i in range(len(poll_list)):
             p = Poll.from_json(poll_list[i])
 
@@ -450,7 +449,7 @@ def stop_poll(query: catbot.CallbackQuery):
 
 def stop_poll_scheduled():
     with p_lock:
-        poll_list, rec = record_empty_test('poll', list)
+        poll_list, rec = bot.secure_record_fetch('poll', list)
 
         i = 0
         while i < (len(poll_list)):

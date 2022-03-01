@@ -4,17 +4,16 @@ import catbot
 
 from responsive import trusted
 from responsive import bot, config, t_lock
-from responsive import command_detector, record_empty_test
 
 
 @trusted
 def set_show_joining_cri(msg: catbot.Message) -> bool:
-    return command_detector('/show_joining', msg) and msg.chat.type == 'supergroup'
+    return bot.detect_command('/show_joining', msg) and msg.chat.type == 'supergroup'
 
 
 def set_show_joining(msg: catbot.Message):
     with t_lock:
-        show_joining_set, rec = record_empty_test('show_joining', list)
+        show_joining_set, rec = bot.secure_record_fetch('show_joining', list)
         show_joining_set.append(msg.chat.id)
         rec['show_joining'] = show_joining_set
         json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
@@ -33,7 +32,7 @@ def show_joining_cri(msg: catbot.ChatMemberUpdate) -> bool:
 
 def show_joining(msg: catbot.ChatMemberUpdate):
     with t_lock:
-        show_joining_set, rec = record_empty_test('show_joining', list)
+        show_joining_set, rec = bot.secure_record_fetch('show_joining', list)
 
     if msg.chat.id not in show_joining_set:
         return
@@ -46,12 +45,12 @@ def show_joining(msg: catbot.ChatMemberUpdate):
 
 @trusted
 def unset_show_joining_cri(msg: catbot.Message) -> bool:
-    return command_detector('/hide_joining', msg) and msg.chat.type == 'supergroup'
+    return bot.detect_command('/hide_joining', msg) and msg.chat.type == 'supergroup'
 
 
 def unset_show_joining(msg: catbot.Message):
     with t_lock:
-        helper_set, rec = record_empty_test('show_joining', list)
+        helper_set, rec = bot.secure_record_fetch('show_joining', list)
         if msg.chat.id in helper_set:
             helper_set.remove(msg.chat.id)
         rec['show_joining'] = helper_set

@@ -4,17 +4,16 @@ import catbot
 
 from responsive import trusted
 from responsive import bot, config, t_lock
-from responsive import command_detector, record_empty_test
 
 
 @trusted
 def set_channel_helper_cri(msg: catbot.Message) -> bool:
-    return command_detector('/set_channel_helper', msg) and msg.chat.type == 'supergroup'
+    return bot.detect_command('/set_channel_helper', msg) and msg.chat.type == 'supergroup'
 
 
 def set_channel_helper(msg: catbot.Message):
     with t_lock:
-        helper_set, rec = record_empty_test('channel_helper', list)
+        helper_set, rec = bot.secure_record_fetch('channel_helper', list)
         helper_set.append(msg.chat.id)
         rec['channel_helper'] = helper_set
         json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
@@ -33,7 +32,7 @@ def channel_helper_cri(msg: catbot.ChatMemberUpdate) -> bool:
 
 def channel_helper(msg: catbot.ChatMemberUpdate):
     with t_lock:
-        helper_set, rec = record_empty_test('channel_helper', list)
+        helper_set, rec = bot.secure_record_fetch('channel_helper', list)
 
     if msg.chat.id not in helper_set:
         return
@@ -57,7 +56,7 @@ def channel_helper_msg_deletion_cri(msg: catbot.Message) -> bool:
 
 def channel_helper_msg_deletion(msg: catbot.Message):
     with t_lock:
-        helper_set, rec = record_empty_test('channel_helper', list)
+        helper_set, rec = bot.secure_record_fetch('channel_helper', list)
 
     if msg.chat.id not in helper_set:
         return
@@ -78,12 +77,12 @@ def channel_helper_msg_deletion(msg: catbot.Message):
 
 @trusted
 def unset_channel_helper_cri(msg: catbot.Message) -> bool:
-    return command_detector('/unset_channel_helper', msg) and msg.chat.type == 'supergroup'
+    return bot.detect_command('/unset_channel_helper', msg) and msg.chat.type == 'supergroup'
 
 
 def unset_channel_helper(msg: catbot.Message):
     with t_lock:
-        helper_set, rec = record_empty_test('channel_helper', list)
+        helper_set, rec = bot.secure_record_fetch('channel_helper', list)
         if msg.chat.id in helper_set:
             helper_set.remove(msg.chat.id)
         rec['channel_helper'] = helper_set

@@ -2,17 +2,16 @@ import json
 
 import catbot
 from responsive import bot, config
-from responsive import record_empty_test, command_detector
 from responsive import trusted
 
 
 @trusted
 def set_trusted_cri(msg: catbot.Message) -> bool:
-    return command_detector('/set_trusted', msg)
+    return bot.detect_command('/set_trusted', msg)
 
 
 def set_trusted(msg: catbot.Message):
-    trusted_list, rec = record_empty_test('trusted', list)
+    trusted_list, rec = bot.secure_record_fetch('trusted', list)
 
     new_trusted_id = []
     if msg.reply:
@@ -47,11 +46,11 @@ def set_trusted(msg: catbot.Message):
 
 @trusted
 def list_trusted_cri(msg: catbot.Message) -> bool:
-    return command_detector('/list_trusted', msg) and msg.chat.type != 'private'
+    return bot.detect_command('/list_trusted', msg) and msg.chat.type != 'private'
 
 
 def list_trusted(msg: catbot.Message):
-    trusted_list, rec = record_empty_test('trusted', list)
+    trusted_list, rec = bot.secure_record_fetch('trusted', list)
 
     resp_list = []
     bot.api('sendChatAction', {'chat_id': msg.chat.id, 'action': 'typing'})

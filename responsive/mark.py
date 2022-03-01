@@ -2,16 +2,15 @@ import json
 
 import catbot
 from responsive import bot, config
-from responsive import record_empty_test, command_detector
 from responsive import trusted
 
 
 def mark_cri(msg: catbot.Message) -> bool:
-    return command_detector('/mark', msg)
+    return bot.detect_command('/mark', msg)
 
 
 def mark(msg: catbot.Message):
-    mark_rec, rec = record_empty_test('mark', dict)
+    mark_rec, rec = bot.secure_record_fetch('mark', dict)
 
     if not str(msg.chat.id).startswith('-100'):
         bot.send_message(msg.chat.id, text=config['messages']['mark_private'], reply_to_message_id=msg.id)
@@ -36,11 +35,11 @@ def mark(msg: catbot.Message):
 
 
 def list_marked_cri(msg: catbot.Message) -> bool:
-    return command_detector('/list_marked', msg)
+    return bot.detect_command('/list_marked', msg)
 
 
 def list_marked(msg: catbot.Message):
-    mark_rec, rec = record_empty_test('mark', dict)
+    mark_rec, rec = bot.secure_record_fetch('mark', dict)
 
     if not str(msg.chat.id).startswith('-100'):
         bot.send_message(msg.chat.id, text=config['messages']['mark_private'], reply_to_message_id=msg.id)
@@ -58,11 +57,11 @@ def list_marked(msg: catbot.Message):
 
 @trusted
 def unmark_cri(msg: catbot.Message) -> bool:
-    return command_detector('/unmark', msg)
+    return bot.detect_command('/unmark', msg)
 
 
 def unmark(msg: catbot.Message):
-    mark_rec, rec = record_empty_test('mark', dict)
+    mark_rec, rec = bot.secure_record_fetch('mark', dict)
 
     if not str(msg.chat.id).startswith('-100'):
         bot.send_message(msg.chat.id, text=config['messages']['mark_private'], reply_to_message_id=msg.id)

@@ -1,5 +1,6 @@
 import multiprocessing
 
+from responsive import bot
 from responsive.mark import *
 from responsive.misc import *
 from responsive.new_pages import *

@@ -1,5 +1,6 @@
 import json
 
+from catbot.util import html_refer
 from sseclient import SSEClient
 
 import catbot
@@ -52,7 +53,8 @@ def sending_trials(chat_id: int, title: str, user: str):
     for i in range(5):
         try:
             bot.send_message(chat_id,
-                             text=f'<a href="https://zh.wikipedia.org/wiki/{title}?redirect=no">{title}</a>'
+                             text=f'<a href="https://zh.wikipedia.org/wiki/{html_refer(title)}?redirect=no">'
+                                  f'{html_refer(title)}</a>'
                                   f' - <a href="https://zh.wikipedia.org/wiki/Special:Contributions/{user}"'
                                   f'>{user}</a>',
                              parse_mode='HTML')

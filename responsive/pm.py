@@ -3,7 +3,6 @@ import json
 import catbot
 from responsive import blocked
 from responsive import bot, config
-from responsive import record_empty_test, command_detector
 
 
 @blocked
@@ -51,11 +50,11 @@ def reply(msg: catbot.Message):
 
 
 def block_private_cri(msg: catbot.Message) -> bool:
-    return command_detector('/block', msg) and msg.chat.id == config['operator_id']
+    return bot.detect_command('/block', msg) and msg.chat.id == config['operator_id']
 
 
 def block_private(msg: catbot.Message):
-    blocked_list, rec = record_empty_test('blocked', list)
+    blocked_list, rec = bot.secure_record_fetch('blocked', list)
 
     user_input_token = msg.text.split()
     id_to_block = []
@@ -86,11 +85,11 @@ def block_private(msg: catbot.Message):
 
 
 def list_block_private_cri(msg: catbot.Message) -> bool:
-    return command_detector('/list_blocked', msg) and msg.chat.id == config['operator_id']
+    return bot.detect_command('/list_blocked', msg) and msg.chat.id == config['operator_id']
 
 
 def list_block_private(msg: catbot.Message):
-    blocked_list = record_empty_test('blocked', list)[0]
+    blocked_list = bot.secure_record_fetch('blocked', list)[0]
     resp_text = ''
     if len(blocked_list) == 0:
         bot.send_message(config['operator_id'], text=config['messages']['list_block_empty'], reply_to_message_id=msg.id)
@@ -102,11 +101,11 @@ def list_block_private(msg: catbot.Message):
 
 
 def unblock_private_cri(msg: catbot.Message) -> bool:
-    return command_detector('/unblock', msg) and msg.chat.id == config['operator_id']
+    return bot.detect_command('/unblock', msg) and msg.chat.id == config['operator_id']
 
 
 def unblock_private(msg: catbot.Message):
-    blocked_list, rec = record_empty_test('blocked', list)
+    blocked_list, rec = bot.secure_record_fetch('blocked', list)
 
     user_input_token = msg.text.split()
     unblocked_id = []

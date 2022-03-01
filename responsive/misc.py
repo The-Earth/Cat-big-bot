@@ -1,11 +1,10 @@
 import catbot
 
 from responsive import bot, config
-from responsive import command_detector
 
 
 def get_user_id_cri(msg: catbot.Message) -> bool:
-    return command_detector('/user_id', msg)
+    return bot.detect_command('/user_id', msg)
 
 
 def get_user_id(msg: catbot.Message):
@@ -17,7 +16,7 @@ def get_user_id(msg: catbot.Message):
 
 
 def get_chat_id_cri(msg: catbot.Message) -> bool:
-    return command_detector('/chat_id', msg)
+    return bot.detect_command('/chat_id', msg)
 
 
 def get_chat_id(msg: catbot.Message):
@@ -25,7 +24,7 @@ def get_chat_id(msg: catbot.Message):
 
 
 def start_cri(msg: catbot.Message) -> bool:
-    return command_detector('/start', msg) and msg.chat.type == 'private'
+    return bot.detect_command('/start', msg) and msg.chat.type == 'private'
 
 
 def start(msg: catbot.Message):
@@ -36,7 +35,7 @@ def bot_help_cri(msg: catbot.Message) -> bool:
     if msg.chat.type != 'private':
         return f'/help@{bot.username}' in msg.commands and msg.text.startswith(f'/help@{bot.username}')
     else:
-        return command_detector('/help', msg)
+        return bot.detect_command('/help', msg)
 
 
 def bot_help(msg: catbot.Message):
@@ -44,7 +43,7 @@ def bot_help(msg: catbot.Message):
 
 
 def get_permalink_cri(msg: catbot.Message) -> bool:
-    return command_detector('/permalink', msg) and msg.chat.type == 'private'
+    return bot.detect_command('/permalink', msg) and msg.chat.type == 'private'
 
 
 def get_permalink(msg: catbot.Message):
@@ -67,7 +66,7 @@ def get_permalink(msg: catbot.Message):
 
 
 def raw_api_cri(msg: catbot.Message) -> bool:
-    return command_detector('/api', msg) and msg.from_.id == config['operator_id']
+    return bot.detect_command('/api', msg) and msg.from_.id == config['operator_id']
 
 
 def raw_api(msg: catbot.Message):

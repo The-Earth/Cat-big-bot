@@ -2,15 +2,14 @@ import json
 
 import catbot
 from responsive import bot, config
-from responsive import record_empty_test, command_detector
 
 
 def start_new_pages_cri(msg: catbot.Message) -> bool:
-    return command_detector('/start_new_pages', msg)
+    return bot.detect_command('/start_new_pages', msg)
 
 
 def start_new_pages(msg: catbot.Message):
-    new_pages_rec, rec = record_empty_test('new_pages', list)
+    new_pages_rec, rec = bot.secure_record_fetch('new_pages', dict)
 
     if str(msg.chat.id) in new_pages_rec.keys():
         new_pages_rec[str(msg.chat.id)]['enable'] = True
@@ -25,11 +24,11 @@ def start_new_pages(msg: catbot.Message):
 
 
 def stop_new_pages_cri(msg: catbot.Message) -> bool:
-    return command_detector('/stop_new_pages', msg)
+    return bot.detect_command('/stop_new_pages', msg)
 
 
 def stop_new_pages(msg: catbot.Message):
-    new_pages_rec, rec = record_empty_test('new_pages', list)
+    new_pages_rec, rec = bot.secure_record_fetch('new_pages', list)
 
     if str(msg.chat.id) in new_pages_rec.keys():
         new_pages_rec[str(msg.chat.id)]['enable'] = False
@@ -42,7 +41,7 @@ def stop_new_pages(msg: catbot.Message):
 
 
 def list_ns_cri(msg: catbot.Message) -> bool:
-    return command_detector('/list_ns', msg)
+    return bot.detect_command('/list_ns', msg)
 
 
 def list_ns(msg: catbot.Message):
@@ -50,11 +49,11 @@ def list_ns(msg: catbot.Message):
 
 
 def set_ns_cri(msg: catbot.Message) -> bool:
-    return command_detector('/set_ns', msg)
+    return bot.detect_command('/set_ns', msg)
 
 
 def set_ns(msg: catbot.Message):
-    new_pages_rec, rec = record_empty_test('new_pages', list)
+    new_pages_rec, rec = bot.secure_record_fetch('new_pages', list)
 
     user_input_token = msg.text.split(' ')
     if len(user_input_token) == 1:
