@@ -50,36 +50,30 @@ def new_pages():
 
 
 def sending_trials(chat_id: int, title: str, user: str):
-    for i in range(5):
-        try:
-            bot.send_message(chat_id,
-                             text=f'<a href="https://zh.wikipedia.org/wiki/{html_refer(title)}?redirect=no">'
-                                  f'{html_refer(title)}</a>'
-                                  f' - <a href="https://zh.wikipedia.org/wiki/Special:Contributions/{user}"'
-                                  f'>{user}</a>',
-                             parse_mode='HTML')
-        except catbot.APIError as e:
-            print(e.args[0])
-            if 'user is deactivated' in e.args[0]:
-                print(f'{chat_id} is deactivated, removing it from settings.')
-                try:
-                    rec: dict = json.load(open(config['record'], 'r', encoding='utf-8'))
-                    new_pages_rec: dict = rec['new_pages']
-                    new_pages_rec.pop(str(chat_id))
-                    json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
-                except KeyError:
-                    break
-            else:
-                print(f'Retrying sending {title} to {chat_id} ... {i + 1}')
-                continue
-        else:
-            break
+    try:
+        bot.send_message(chat_id,
+                         text=f'<a href="https://zh.wikipedia.org/wiki/{html_refer(title)}?redirect=no">'
+                              f'{html_refer(title)}</a>'
+                              f' - <a href="https://zh.wikipedia.org/wiki/Special:Contributions/{user}"'
+                              f'>{user}</a>',
+                         parse_mode='HTML')
+    except catbot.APIError as e:
+        print(e.args[0])
+        if 'user is deactivated' in e.args[0]:
+            print(f'{chat_id} is deactivated, removing it from settings.')
+            try:
+                rec: dict = json.load(open(config['record'], 'r', encoding='utf-8'))
+                new_pages_rec: dict = rec['new_pages']
+                new_pages_rec.pop(str(chat_id))
+                json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+            except KeyError:
+                pass
 
 
 if __name__ == '__main__':
-    from requests.exceptions import HTTPError
+    from requests.exceptions import HTTPError, ConnectionError
     while True:
         try:
             new_pages()
-        except HTTPError:
+        except (HTTPError, ConnectionError, ConnectionResetError):
             continue
