@@ -77,7 +77,7 @@ def porn_detect_tester(msg: catbot.Message):
     image_tensor = (transformer(image).float() / 255.)[None, :]
 
     net = Net()
-    net.load_state_dict(torch.load('ready.pt', map_location='cpu'))
+    net.load_state_dict(torch.load(config['porn_detection_model'], map_location='cpu'))
     with torch.no_grad():
         pred = net(image_tensor)
     prob = f'{pred.item() * 100:.2f}'
