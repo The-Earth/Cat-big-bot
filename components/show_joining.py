@@ -2,8 +2,8 @@ import json
 
 import catbot
 
-from responsive import trusted
-from responsive import bot, config, t_lock
+from components import trusted
+from components import bot, config, t_lock
 
 
 @trusted

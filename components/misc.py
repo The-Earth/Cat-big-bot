@@ -1,6 +1,6 @@
 import catbot
 
-from responsive import bot, config
+from components import bot, config
 
 
 def get_user_id_cri(msg: catbot.Message) -> bool:

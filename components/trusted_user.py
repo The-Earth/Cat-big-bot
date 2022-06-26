@@ -1,8 +1,8 @@
 import json
 
 import catbot
-from responsive import bot, config
-from responsive import trusted
+from components import bot, config
+from components import trusted
 
 
 @trusted

@@ -2,3 +2,6 @@ requests
 dateparser
 sseclient
 git+https://github.com/The-Earth/catbot.git#egg=catbot
+torch
+torchvision
+Pillow

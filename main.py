@@ -1,14 +1,15 @@
 import multiprocessing
 
-from responsive import bot
-from responsive.mark import *
-from responsive.misc import *
-from responsive.new_pages import *
-from responsive.pm import *
-from responsive.poll import *
-from responsive.trusted_user import *
-from responsive.channel_helper import *
-from responsive.show_joining import *
+from components import bot
+from components.mark import *
+from components.misc import *
+from components.new_pages import *
+from components.pm import *
+from components.poll import *
+from components.trusted_user import *
+from components.channel_helper import *
+from components.show_joining import *
+from components.spam_detection import *
 
 bot.add_msg_task(get_user_id_cri, get_user_id)
 bot.add_msg_task(get_chat_id_cri, get_chat_id)
@@ -45,17 +46,31 @@ bot.add_msg_task(raw_api_cri, raw_api)
 bot.add_member_status_task(show_joining_cri, show_joining)
 bot.add_msg_task(set_show_joining_cri, set_show_joining)
 bot.add_msg_task(unset_show_joining_cri, unset_show_joining)
+bot.add_msg_task(porn_detect_tester_cri, porn_detect_tester)
+
+
+def bot_run():
+    while True:
+        try:
+            bot.start()
+        except:
+            pass
 
 
 if __name__ == '__main__':
     multiprocessing.freeze_support()
     scheduled_stop_poll_p = multiprocessing.Process(target=stop_poll_scheduled_main, daemon=True)
     scheduled_stop_poll_p.start()
+    bot_p = multiprocessing.Process(target=bot_run, daemon=True)
+    bot_p.start()
+    new_pages_p = multiprocessing.Process(target=new_pages_main, daemon=True)
+    new_pages_p.start()
+    porn_detect_p = multiprocessing.Process(target=porn_detect_main, daemon=True)
+    porn_detect_p.start()
 
+    import time
     while True:
         try:
-            bot.start()
+            time.sleep(3600)
         except KeyboardInterrupt:
             break
-        except:
-            pass

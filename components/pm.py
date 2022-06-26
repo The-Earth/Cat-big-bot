@@ -1,8 +1,8 @@
 import json
 
 import catbot
-from responsive import blocked
-from responsive import bot, config
+from components import blocked
+from components import bot, config
 
 
 @blocked

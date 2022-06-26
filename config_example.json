@@ -1,5 +1,7 @@
 {
   "token": "123456789:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  "api_id": "123456",
+  "api_hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
   "proxy": {
     "enable": true,
     "proxy_url": "http://127.0.0.1:9999"
@@ -7,6 +9,8 @@
   "operator_id": 987654321,
   "record": "record.json",
   "ac_record": "ac.json",
+  "porn_detection_model": "model.pt",
+  "porn_alert_chat": -1001234567890,
   "messages": {
     "pass_on_new_msg_to_op": "收到新消息，来自<a href=\"tg://user?id={from_id}\">{from_name}</a> (ID: {from_id}, {from_username}) \n Reply with /reply_{from_id}",
     "pass_on_sending_failed": "发送失败。",
@@ -75,6 +79,8 @@
     "api_data_error": "参数 {key} 处有误",
     "set_show_joining_succ": "已设置由本机器人显示入群信息。",
     "show_joining": "<a href=\"tg://user?id={user_id}\">{user_name}</a>加入群组。",
-    "unset_show_joining_succ": "已设置本机器人不显示入群信息。"
+    "unset_show_joining_succ": "已设置本机器人不显示入群信息。",
+    "porn_detection_tester": "Porn spam detection: {prob}%",
+    "porn_detected_alert": "Possible porn spam: {link}\n{prob}"
   }
 }

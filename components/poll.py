@@ -5,8 +5,8 @@ import catbot
 import dateparser
 
 from poll import Poll
-from responsive import trusted
-from responsive import bot, config, t_lock, p_lock
+from components import trusted
+from components import bot, config, t_lock, p_lock
 
 
 def get_poll_text(p: Poll) -> str:
