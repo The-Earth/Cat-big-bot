@@ -62,3 +62,10 @@ venv.bak/
 .idea/
 .vscode/
 config.json
+
+# PyTorch
+*.pt
+
+# Telethon
+*.session
+*.session-journal
