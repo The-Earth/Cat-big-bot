@@ -64,16 +64,39 @@ def porn_detect_tester(msg: catbot.Message):
     photo = msg.photo[-1]
     file = bot.get_file(photo.file_id)
     image = Image.open(BytesIO(bot.download(file)))
-    if image.size[0] > image.size[1]:
-        image = image.rotate(90)
-    image = image.resize((180, 320))
     transformer = PILToTensor()
     image_tensor = (transformer(image).float() / 255.)[None, :]
+
+    if image.size[0] < 64 or image.size[1] < 64:
+        return
+
+    transformer = PILToTensor()
+    image_tensor = (transformer(image).float() / 255.)
+
+    sub_images = []
+    h_num = min(image_tensor.shape[1] // 64, 5)
+    w_num = min(image_tensor.shape[2] // 64, 5)
+    for i in range(5):
+        for j in range(5):
+            if i < h_num < 5:
+                h_start = (h_num - 1) * 64
+            elif h_num < 5 and i >= h_num:
+                h_start = h_num - 1
+            else:
+                h_start = i * (image_tensor.shape[1] // 5)
+            if j < w_num < 5:
+                w_start = (w_num - 1) * 64
+            elif w_num < 5 and i >= w_num:
+                w_start = w_num - 1
+            else:
+                w_start = i * (image_tensor.shape[2] // 5)
+            sub_images.append(image_tensor[:, h_start:h_start + 64, w_start:w_start + 64])
+    sub_tensors = torch.cat(sub_images, dim=1)[None, :]
 
     net = Net()
     net.load_state_dict(torch.load(config['porn_detection_model'], map_location='cpu'))
     with torch.no_grad():
-        pred = net(image_tensor)
+        pred = net(sub_tensors)
     prob = f'{pred.item() * 100:.2f}'
 
     bot.send_message(msg.chat.id, text=config['messages']['porn_detection_tester'].format(prob=prob),
