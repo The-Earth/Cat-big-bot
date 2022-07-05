@@ -16,46 +16,40 @@ from components import bot, config
 class Net(nn.Module):
     def __init__(self):
         """
-        Input: (180, 320)
+        Input: (1600, 64)
         """
         super(Net, self).__init__()
 
         self.conv1 = nn.Conv2d(3, 6, 3)
         self.conv2 = nn.Conv2d(6, 12, 3)
         self.conv3 = nn.Conv2d(12, 18, 3)
-        self.conv4 = nn.Conv2d(18, 24, 5)
-
-        self.conv5 = nn.Conv2d(3, 6, 11)
-        self.conv6 = nn.Conv2d(6, 12, 9)
-        self.conv7 = nn.Conv2d(12, 18, 9)
-        self.conv8 = nn.Conv2d(18, 24, 9)
+        self.conv4 = nn.Conv2d(18, 24, 3)
 
         self.pool = nn.MaxPool2d(2)
 
-        self.fc1 = nn.Linear(4128, 1024)
-        self.fc2 = nn.Linear(1024, 128)
-        self.fc3 = nn.Linear(128, 16)
-        self.fc4 = nn.Linear(16, 1)
+        self.fc1 = nn.Linear(9600, 2048)
+        self.fc2 = nn.Linear(2048, 512)
+        self.fc3 = nn.Linear(512, 128)
+        self.fc4 = nn.Linear(128, 16)
+        self.fc5 = nn.Linear(16, 1)
 
     def forward(self, x):
-        x1 = torch.relu(self.pool(self.conv1(x)))
-        x1 = torch.relu(self.pool(self.conv2(x1)))
-        x1 = torch.relu(self.pool(self.conv3(x1)))
-        x1 = torch.relu(self.pool(self.conv4(x1)))
-        x1 = torch.flatten(x1, start_dim=1)
+        sub_tensors = [x[:, :, i * 64:((i + 1) * 64)] for i in range(25)]
+        sub_output = []
 
-        x2 = torch.relu(self.pool(self.conv5(x)))
-        x2 = torch.relu(self.pool(self.conv6(x2)))
-        x2 = torch.relu(self.pool(self.conv7(x2)))
-        x2 = torch.relu(self.pool(self.conv8(x2)))
-        x2 = torch.flatten(x2, start_dim=1)
+        for i, item in enumerate(sub_tensors):
+            x1 = torch.relu(self.pool(self.conv1(item)))
+            x1 = torch.relu(self.pool(self.conv2(x1)))
+            x1 = torch.relu(self.pool(self.conv3(x1)))
+            x1 = torch.relu(self.conv4(x1))
+            sub_output.append(torch.flatten(x1, start_dim=1))
 
-        x = torch.cat((x1, x2), 1)
-
+        x = torch.cat(sub_output, dim=1)
         x = torch.relu(self.fc1(x))
         x = torch.relu(self.fc2(x))
         x = torch.relu(self.fc3(x))
-        x = torch.sigmoid(self.fc4(x))
+        x = torch.relu(self.fc4(x))
+        x = torch.sigmoid(self.fc5(x))
 
         return x
 
@@ -92,23 +86,46 @@ def porn_detect_main():
     @client.on(events.NewMessage())
     async def porn_detect(event: NewMessage):
         chat_id = event.chat_id
+        if int(chat_id) == config['operator_id']:
+            return
         msg_id = event.id
         photo: Photo = event.photo
 
         if photo is not None:
             photo_buff = await event.download_media(file=bytes, thumb=-1)
             image = Image.open(BytesIO(photo_buff))
-            if image.size[0] > image.size[1]:
-                image = image.rotate(90)
-            image = image.resize((180, 320))
+
+            if image.size[0] < 64 or image.size[1] < 64:
+                return
+
             transformer = PILToTensor()
-            image_tensor = (transformer(image).float() / 255.)[None, :]
+            image_tensor = (transformer(image).float() / 255.)
+
+            sub_images = []
+            h_num = min(image_tensor.shape[1] // 64, 5)
+            w_num = min(image_tensor.shape[2] // 64, 5)
+            for i in range(5):
+                for j in range(5):
+                    if i < h_num < 5:
+                        h_start = (h_num - 1) * 64
+                    elif h_num < 5 and i >= h_num:
+                        h_start = h_num - 1
+                    else:
+                        h_start = i * (image_tensor.shape[1] // 5)
+                    if j < w_num < 5:
+                        w_start = (w_num - 1) * 64
+                    elif w_num < 5 and i >= w_num:
+                        w_start = w_num - 1
+                    else:
+                        w_start = i * (image_tensor.shape[2] // 5)
+                    sub_images.append(image_tensor[:, h_start:h_start + 64, w_start:w_start + 64])
+            sub_tensors = torch.cat(sub_images, dim=1)[None, :]
 
             net = Net()
             net.load_state_dict(torch.load(config['porn_detection_model'], map_location='cpu'))
             with torch.no_grad():
-                pred = net(image_tensor)
-            if pred > 0.8:
+                pred = net(sub_tensors)
+            if pred > 0.5:
                 link = f't.me/c/{str(chat_id).replace("-100", "")}/{msg_id}'
                 prob_text = f'{pred.item() * 100:.0f}%'
                 bot.send_message(config['porn_alert_chat'],
