@@ -3,7 +3,9 @@
 
 ## 运行
 
-机器人分为两部分，`responsive_tasks.py` 放置回应用户指令的功能，`sending_tasks.py` 放置根据其他信息源推送内容的功能（纯发送，不响应），目前只有中文维基百科新页面推送。运行机器人时直接运行这两个文件。
+```bash
+python3 main.py
+```
 
 机器人依赖于 [catbot](https://github.com/The-Earth/catbot) 框架。
 
