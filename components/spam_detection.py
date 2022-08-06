@@ -27,11 +27,12 @@ class Net(nn.Module):
 
         self.pool = nn.MaxPool2d(2)
 
-        self.fc1 = nn.Linear(9600, 2048)
-        self.fc2 = nn.Linear(2048, 512)
-        self.fc3 = nn.Linear(512, 128)
-        self.fc4 = nn.Linear(128, 16)
-        self.fc5 = nn.Linear(16, 1)
+        self.fc1 = nn.ModuleList([nn.Linear(384, 128) for _ in range(25)])
+        self.fc2 = nn.ModuleList([nn.Linear(128, 16) for _ in range(25)])
+        self.fc3 = nn.ModuleList([nn.Linear(16, 1) for _ in range(25)])
+
+        self.fc4 = nn.Linear(25, 12)
+        self.fc5 = nn.Linear(12, 1)
 
     def forward(self, x):
         sub_tensors = [x[:, :, i * 64:((i + 1) * 64)] for i in range(25)]
@@ -42,12 +43,15 @@ class Net(nn.Module):
             x1 = torch.relu(self.pool(self.conv2(x1)))
             x1 = torch.relu(self.pool(self.conv3(x1)))
             x1 = torch.relu(self.conv4(x1))
-            sub_output.append(torch.flatten(x1, start_dim=1))
+            x1 = torch.flatten(x1, start_dim=1)
+
+            x1 = torch.relu(self.fc1[i](x1))
+            x1 = torch.relu(self.fc2[i](x1))
+            x1 = torch.relu(self.fc3[i](x1))
+
+            sub_output.append(x1)
 
         x = torch.cat(sub_output, dim=1)
-        x = torch.relu(self.fc1(x))
-        x = torch.relu(self.fc2(x))
-        x = torch.relu(self.fc3(x))
         x = torch.relu(self.fc4(x))
         x = torch.sigmoid(self.fc5(x))
 
@@ -64,8 +68,6 @@ def porn_detect_tester(msg: catbot.Message):
     photo = msg.photo[-1]
     file = bot.get_file(photo.file_id)
     image = Image.open(BytesIO(bot.download(file)))
-    transformer = PILToTensor()
-    image_tensor = (transformer(image).float() / 255.)[None, :]
 
     if image.size[0] < 64 or image.size[1] < 64:
         return
