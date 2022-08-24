@@ -128,12 +128,12 @@ def new_pages():
 def sending_trials(chat_id: int, title: str, user: str):
     try:
         text = f'<a href="https://zh.wikipedia.org/wiki/{html_refer(title)}?redirect=no">{html_refer(title)}</a>' \
-               f' - <a href="https://zh.wikipedia.org/wiki/Special:Contributions/{user}">{user}</a>',
+               f' - <a href="https://zh.wikipedia.org/wiki/Special:Contributions/{user}">{user}</a>'
         bot.send_message(chat_id, text=text, parse_mode='HTML')
     except catbot.APIError as e:
         print(e.args[0])
-        if 'user is deactivated' in e.args[0]:
-            print(f'{chat_id} is deactivated, removing it from settings.')
+        if 'user is deactivated' in e.args[0] or 'chat_not found' in e.args[0]:
+            print(f'Removing {chat_id}')
             try:
                 rec: dict = json.load(open(config['record'], 'r', encoding='utf-8'))
                 new_pages_rec: dict = rec['new_pages']
