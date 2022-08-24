@@ -101,7 +101,7 @@ def porn_detect_main():
     @client.on(events.NewMessage())
     async def porn_detect(event: NewMessage):
         chat_id = event.chat_id
-        if int(chat_id) == config['operator_id']:
+        if int(chat_id) == bot.id:
             return
         msg_id = event.id
         photo: Photo = event.photo
