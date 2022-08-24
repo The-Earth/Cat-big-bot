@@ -1,4 +1,3 @@
-import asyncio
 from io import BytesIO
 
 import catbot
@@ -58,6 +57,27 @@ class Net(nn.Module):
         return x
 
 
+def image_to_tensor(image: Image) -> torch.Tensor | None:
+    if image.size[0] < 64 or image.size[1] < 64:
+        return
+
+    transformer = PILToTensor()
+    image_tensor = (transformer(image).float() / 255.)
+
+    sub_images = []
+    for i in range(25):
+        h_start = torch.randint(0, image_tensor.shape[1] - 64, (1,))
+        w_start = torch.randint(0, image_tensor.shape[2] - 64, (1,))
+        sub_images.append(image_tensor[:, h_start:h_start + 64, w_start:w_start + 64])
+    sub_tensors = torch.cat(sub_images, dim=1)[None, :]
+
+    net = Net()
+    net.load_state_dict(torch.load(config['porn_detection_model'], map_location='cpu'))
+    with torch.no_grad():
+        pred = net(sub_tensors)
+    return pred
+
+
 def porn_detect_tester_cri(msg: catbot.Message) -> bool:
     return msg.chat.id == config['operator_id'] and msg.has_photo
 
@@ -68,37 +88,7 @@ def porn_detect_tester(msg: catbot.Message):
     photo = msg.photo[-1]
     file = bot.get_file(photo.file_id)
     image = Image.open(BytesIO(bot.download(file)))
-
-    if image.size[0] < 64 or image.size[1] < 64:
-        return
-
-    transformer = PILToTensor()
-    image_tensor = (transformer(image).float() / 255.)
-
-    sub_images = []
-    h_num = min(image_tensor.shape[1] // 64, 5)
-    w_num = min(image_tensor.shape[2] // 64, 5)
-    for i in range(5):
-        for j in range(5):
-            if i < h_num < 5:
-                h_start = (h_num - 1) * 64
-            elif h_num < 5 and i >= h_num:
-                h_start = h_num - 1
-            else:
-                h_start = i * (image_tensor.shape[1] // 5)
-            if j < w_num < 5:
-                w_start = (w_num - 1) * 64
-            elif w_num < 5 and i >= w_num:
-                w_start = w_num - 1
-            else:
-                w_start = i * (image_tensor.shape[2] // 5)
-            sub_images.append(image_tensor[:, h_start:h_start + 64, w_start:w_start + 64])
-    sub_tensors = torch.cat(sub_images, dim=1)[None, :]
-
-    net = Net()
-    net.load_state_dict(torch.load(config['porn_detection_model'], map_location='cpu'))
-    with torch.no_grad():
-        pred = net(sub_tensors)
+    pred = image_to_tensor(image)
     prob = f'{pred.item() * 100:.2f}'
 
     bot.send_message(msg.chat.id, text=config['messages']['porn_detection_tester'].format(prob=prob),
@@ -119,37 +109,7 @@ def porn_detect_main():
         if photo is not None:
             photo_buff = await event.download_media(file=bytes, thumb=-1)
             image = Image.open(BytesIO(photo_buff))
-
-            if image.size[0] < 64 or image.size[1] < 64:
-                return
-
-            transformer = PILToTensor()
-            image_tensor = (transformer(image).float() / 255.)
-
-            sub_images = []
-            h_num = min(image_tensor.shape[1] // 64, 5)
-            w_num = min(image_tensor.shape[2] // 64, 5)
-            for i in range(5):
-                for j in range(5):
-                    if i < h_num < 5:
-                        h_start = (h_num - 1) * 64
-                    elif h_num < 5 and i >= h_num:
-                        h_start = h_num - 1
-                    else:
-                        h_start = i * (image_tensor.shape[1] // 5)
-                    if j < w_num < 5:
-                        w_start = (w_num - 1) * 64
-                    elif w_num < 5 and i >= w_num:
-                        w_start = w_num - 1
-                    else:
-                        w_start = i * (image_tensor.shape[2] // 5)
-                    sub_images.append(image_tensor[:, h_start:h_start + 64, w_start:w_start + 64])
-            sub_tensors = torch.cat(sub_images, dim=1)[None, :]
-
-            net = Net()
-            net.load_state_dict(torch.load(config['porn_detection_model'], map_location='cpu'))
-            with torch.no_grad():
-                pred = net(sub_tensors)
+            pred = image_to_tensor(image)
             if pred > 0.5:
                 link = f't.me/c/{str(chat_id).replace("-100", "")}/{msg_id}'
                 prob_text = f'{pred.item() * 100:.0f}%'
