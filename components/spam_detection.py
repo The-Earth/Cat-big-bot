@@ -1,4 +1,5 @@
 from io import BytesIO
+from typing import Union
 
 import catbot
 import torch
@@ -57,7 +58,7 @@ class Net(nn.Module):
         return x
 
 
-def image_to_tensor(image: Image) -> torch.Tensor | None:
+def image_to_tensor(image: Image) -> Union[torch.Tensor, None]:
     if image.size[0] < 64 or image.size[1] < 64:
         return
 
