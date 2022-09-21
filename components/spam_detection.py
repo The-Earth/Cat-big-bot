@@ -102,21 +102,25 @@ def porn_detect_main():
     @client.on(events.NewMessage())
     async def porn_detect(event: NewMessage):
         chat_id = event.chat_id
-        user_id = event.from_id
+        sender = event.from_id
+        if hasattr(sender, 'user_id'):
+            user_id = sender.user_id
+        else:
+            return
+        if event.photo is None:
+            return
         if int(chat_id) == bot.id or int(user_id) > 5400000000:
             return
         msg_id = event.id
-        photo: Photo = event.photo
 
-        if photo is not None:
-            photo_buff = await event.download_media(file=bytes, thumb=-1)
-            image = Image.open(BytesIO(photo_buff))
-            pred = image_to_tensor(image)
-            if pred > 0.7:
-                link = f't.me/c/{str(chat_id).replace("-100", "")}/{msg_id}'
-                prob_text = f'{pred.item() * 100:.0f}%'
-                bot.send_message(config['porn_alert_chat'],
-                                 text=config['messages']['porn_detected_alert'].format(link=link, prob=prob_text))
+        photo_buff = await event.download_media(file=bytes, thumb=-1)
+        image = Image.open(BytesIO(photo_buff))
+        pred = image_to_tensor(image)
+        if pred > 0.7:
+            link = f't.me/c/{str(chat_id).replace("-100", "")}/{msg_id}'
+            prob_text = f'{pred.item() * 100:.0f}%'
+            bot.send_message(config['porn_alert_chat'],
+                             text=config['messages']['porn_detected_alert'].format(link=link, prob=prob_text))
 
     client.start()
     client.run_until_disconnected()
