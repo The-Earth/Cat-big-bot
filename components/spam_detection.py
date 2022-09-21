@@ -109,7 +109,7 @@ def porn_detect_main():
             return
         if event.photo is None:
             return
-        if int(chat_id) == bot.id or int(user_id) > 5400000000:
+        if int(chat_id) == bot.id or int(user_id) < 5400000000:
             return
         msg_id = event.id
 
