@@ -102,7 +102,7 @@ def porn_detect_main():
     @client.on(events.NewMessage())
     async def porn_detect(event: NewMessage):
         chat_id = event.chat_id
-        user_id = event.user_id
+        user_id = event.from_id
         if int(chat_id) == bot.id or int(user_id) > 5400000000:
             return
         msg_id = event.id
