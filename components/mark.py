@@ -21,9 +21,9 @@ def mark(msg: catbot.Message):
     reply_to_id = msg.reply_to_message.id
 
     if msg.html_formatted_text.startswith(f'/mark@{bot.username}'):
-        comment = msg.html_formatted_text.removeprefix(f'/mark@{bot.username} ')
+        comment = msg.html_formatted_text.removeprefix(f'/mark@{bot.username}').lstrip()
     else:
-        comment = msg.html_formatted_text.removeprefix('/mark ')
+        comment = msg.html_formatted_text.removeprefix('/mark').lstrip()
 
     if str(msg.chat.id) not in mark_rec.keys():
         mark_rec[str(msg.chat.id)] = [{'id': reply_to_id, 'comment': comment}]
@@ -50,7 +50,7 @@ def list_marked(msg: catbot.Message):
     else:
         text = ''
         for record in mark_rec[str(msg.chat.id)]:
-            text += f't.me/c/{str(msg.chat.id).replace("-100", "")}/{record["id"]} {record["comment"]}\n'
+            text += f'<a href="https://t.me/c/{str(msg.chat.id).replace("-100", "")}/{record["id"]}">{record["id"]}</a> {record["comment"]}\n'
         bot.send_message(msg.chat.id, text=text, reply_to_message_id=msg.id, disable_web_page_preview=True,
                          parse_mode='HTML')
 
