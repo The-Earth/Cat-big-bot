@@ -63,7 +63,7 @@
     "abort_poll_answer": "投票已取消",
     "poll": "【投票】 {title} #投票\n开始时间：{start_time}\n结束时间：{end_time}\n已有 {total} 人投票\n",
     "start_poll_already": "投票已开始，见 {url}",
-    "vote_received": "已收到您的投票",
+    "vote_received": "已收到您的投票。机器人可能需要一些时间来显示您投出的票，请耐心等待。",
     "vote_ineligible": "您没有投票权",
     "vote_privilege": {
       "1": "具有投票权者",
