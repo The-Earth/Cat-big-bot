@@ -1,5 +1,4 @@
 from io import BytesIO
-from typing import Union
 
 import catbot
 import torch
@@ -7,7 +6,6 @@ import torch.nn as nn
 from torchvision.transforms import PILToTensor
 from PIL import Image
 from telethon import TelegramClient, events
-from telethon.tl.types import Photo
 from telethon.events.newmessage import NewMessage
 
 from components import bot, config
@@ -115,6 +113,7 @@ def porn_detect_main():
         image = Image.open(BytesIO(photo_buff))
         if image.size[0] < 200 or image.size[1] < 200:
             return
+        bot.api('sendChatAction', {'chat_id': config['porn_alert_chat'], 'action': 'typing'})
         pred = pred_score(image)
         if pred > 0.7:
             link = f't.me/c/{str(chat_id).replace("-100", "")}/{msg_id}'
