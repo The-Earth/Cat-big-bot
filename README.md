@@ -63,3 +63,7 @@ python3 main.py
 ### /help
 
 在群组中或私聊中使用，显示帮助链接。在群组中使用时必须含有 `@CatBigBot` （或您机器人的 username）后缀。
+
+### 垃圾图片检测
+
+此功能使用预先训练好的模型检测聊天中出现的图片，对可能的垃圾图片在设定好的`chat_id`中报告。作为临时解决方案，使用[Telethon](https://github.com/LonamiWebs/Telethon)登入人类账号来获取图片。模型训练使用[Spam-Image-Detection](https://github.com/The-Earth/Spam-Image-Detection)项目。没有设计指令开关。
