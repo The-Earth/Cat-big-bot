@@ -29,6 +29,9 @@ def mark(msg: catbot.Message):
         mark_rec[str(msg.chat.id)] = [{'id': reply_to_id, 'comment': comment}]
     else:
         mark_rec[str(msg.chat.id)].append({'id': reply_to_id, 'comment': comment})
+
+    if len(mark_rec[str(msg.chat.id)]) > 100:
+        mark_rec[str(msg.chat.id)] = mark_rec[str(msg.chat.id)][-100:]
     rec['mark'] = mark_rec
     json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
     bot.send_message(msg.chat.id, text=config['messages']['mark_succ'], reply_to_message_id=msg.id)
