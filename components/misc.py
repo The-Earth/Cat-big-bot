@@ -12,7 +12,7 @@ def get_user_id(msg: catbot.Message):
         res_id = msg.reply_to_message.from_.id
     else:
         res_id = msg.from_.id
-    bot.send_message(chat_id=msg.chat.id, text=res_id, reply_to_message_id=msg.id)
+    bot.send_message(chat_id=msg.chat.id, text=str(res_id), reply_to_message_id=msg.id)
 
 
 def get_chat_id_cri(msg: catbot.Message) -> bool:
@@ -20,7 +20,7 @@ def get_chat_id_cri(msg: catbot.Message) -> bool:
 
 
 def get_chat_id(msg: catbot.Message):
-    bot.send_message(chat_id=msg.chat.id, text=msg.chat.id, reply_to_message_id=msg.id)
+    bot.send_message(chat_id=msg.chat.id, text=str(msg.chat.id), reply_to_message_id=msg.id)
 
 
 def start_cri(msg: catbot.Message) -> bool:
