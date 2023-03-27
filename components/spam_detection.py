@@ -3,7 +3,7 @@ from io import BytesIO
 import catbot
 import torch
 import torch.nn as nn
-from torchvision.transforms import PILToTensor
+from torchvision import transforms
 from PIL import Image
 from telethon import TelegramClient, events
 from telethon.events.newmessage import NewMessage
@@ -58,8 +58,11 @@ class Net(nn.Module):
 def pred_score(image: Image) -> float:
     if image.size[0] < 128 or image.size[1] < 128:
         return 0.
-    transformer = PILToTensor()
-    image_tensor = transformer(image).float() / 255.
+    transformer = transforms.Compose([
+        transforms.PILToTensor(),
+        transforms.ConvertImageDtype(torch.float32),
+    ])
+    image_tensor = transformer(image)
 
     sub_images = []
     for i in range(25):
