@@ -22,9 +22,9 @@ class Net(nn.Module):
 
         self.pool = nn.MaxPool2d(2)
 
-        self.fc1 = nn.ModuleList([nn.Linear(3456, 256) for _ in range(25)])
-        self.fc2 = nn.ModuleList([nn.Linear(256, 64) for _ in range(25)])
-        self.fc3 = nn.ModuleList([nn.Linear(64, 16) for _ in range(25)])
+        self.fc1 = nn.Linear(3456, 256)
+        self.fc2 = nn.Linear(256, 64)
+        self.fc3 = nn.Linear(64, 16)
 
         self.fc4 = nn.Linear(400, 80)
         self.fc5 = nn.Linear(80, 10)
@@ -41,9 +41,9 @@ class Net(nn.Module):
             x1 = torch.relu(self.conv4(x1))
             x1 = torch.flatten(x1, start_dim=1)
 
-            x1 = torch.relu(self.fc1[i](x1))
-            x1 = torch.relu(self.fc2[i](x1))
-            x1 = torch.relu(self.fc3[i](x1))
+            x1 = torch.relu(self.fc1(x1))
+            x1 = torch.relu(self.fc2(x1))
+            x1 = torch.relu(self.fc3(x1))
 
             sub_output.append(torch.flatten(x1, start_dim=1))
 
