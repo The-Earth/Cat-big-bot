@@ -15,14 +15,28 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
 
-        self.conv1 = nn.Conv2d(3, 6, 3)
-        self.conv2 = nn.Conv2d(6, 12, 3)
-        self.conv3 = nn.Conv2d(12, 18, 3)
-        self.conv4 = nn.Conv2d(18, 24, 3)
+        self.conv1 = nn.Conv2d(3, 6, 3, padding='same')
+        self.conv2_1 = nn.Conv2d(6, 6, 3, padding='same')
+        self.conv2_2 = nn.Conv2d(6, 6, 3, padding='same')
+        self.conv2_3 = nn.Conv2d(6, 6, 3, padding='same')
+        self.conv2_4 = nn.Conv2d(6, 6, 3, padding='same')
 
-        self.pool = nn.MaxPool2d(2)
+        self.conv3 = nn.Conv2d(6, 12, 3, padding='same')
+        self.conv3_1 = nn.Conv2d(12, 12, 3, padding='same')
+        self.conv3_res = nn.Conv2d(6, 12, 1, stride=2)
+        self.conv3_2 = nn.Conv2d(12, 12, 3, padding='same')
+        self.conv3_3 = nn.Conv2d(12, 12, 3, padding='same')
 
-        self.fc1 = nn.Linear(3456, 256)
+        self.conv4 = nn.Conv2d(12, 24, 3, padding='same')
+        self.conv4_1 = nn.Conv2d(24, 24, 3, padding='same')
+        self.conv4_res = nn.Conv2d(12, 24, 1, stride=2)
+        self.conv4_2 = nn.Conv2d(24, 24, 3, padding='same')
+        self.conv4_3 = nn.Conv2d(24, 24, 3, padding='same')
+
+        self.max_pool = nn.MaxPool2d(2)
+        self.avg_pool = nn.AvgPool2d(2)
+
+        self.fc1 = nn.Linear(1536, 256)
         self.fc2 = nn.Linear(256, 64)
         self.fc3 = nn.Linear(64, 16)
 
@@ -35,10 +49,32 @@ class Net(nn.Module):
         sub_output = []
 
         for i, item in enumerate(sub_tensors):
-            x1 = torch.relu(self.pool(self.conv1(item)))
-            x1 = torch.relu(self.pool(self.conv2(x1)))
-            x1 = torch.relu(self.pool(self.conv3(x1)))
-            x1 = torch.relu(self.conv4(x1))
+            x1 = self.max_pool(torch.relu(self.conv1(item)))
+            x2 = torch.relu(self.conv2_1(x1))
+            x2 = torch.relu(self.conv2_2(x2))
+            x1 = torch.relu(x1 + x2)
+            x2 = torch.relu(self.conv2_3(x1))
+            x2 = torch.relu(self.conv2_4(x2))
+            x1 = torch.relu(x1 + x2)
+
+            x2 = self.max_pool(torch.relu(self.conv3(x1)))
+            x2 = torch.relu(self.conv3_1(x2))
+            x3 = torch.relu(self.conv3_res(x1))
+            x1 = torch.relu(x2 + x3)
+            x2 = torch.relu(self.conv3_2(x1))
+            x2 = torch.relu(self.conv3_3(x2))
+            x1 = torch.relu(x1 + x2)
+
+            x2 = self.max_pool(torch.relu(self.conv4(x1)))
+            x2 = torch.relu(self.conv4_1(x2))
+            x3 = torch.relu(self.conv4_res(x1))
+            x1 = torch.relu(x2 + x3)
+            x2 = torch.relu(self.conv4_2(x1))
+            x2 = torch.relu(self.conv4_3(x2))
+            x1 = torch.relu(x1 + x2)
+
+            x1 = self.avg_pool(x1)
+
             x1 = torch.flatten(x1, start_dim=1)
 
             x1 = torch.relu(self.fc1(x1))
