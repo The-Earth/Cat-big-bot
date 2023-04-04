@@ -116,7 +116,7 @@ def pred_score(image: Image) -> float:
 
     h_start = torch.randint(0, image_tensor.shape[1] - 256, (1,)) if image_tensor.shape[1] > 256 else 0
     w_start = torch.randint(0, image_tensor.shape[2] - 256, (1,)) if image_tensor.shape[2] > 256 else 0
-    image_tensor = image_tensor[:, h_start: h_start + 256, w_start: w_start + 256]
+    image_tensor = image_tensor[:, h_start: h_start + 256, w_start: w_start + 256][None, :]
 
     net = Net()
     net.load_state_dict(torch.load(config['porn_detection_model'], map_location='cpu'))
