@@ -39,74 +39,74 @@ class Net(nn.Module):
         self.conv5_2 = nn.Conv2d(128, 128, 3, padding='same')
         self.conv5_3 = nn.Conv2d(128, 128, 3, padding='same')
 
+        self.conv6 = nn.Conv2d(128, 256, 3, padding='same')
+        self.conv6_1 = nn.Conv2d(256, 256, 3, padding='same')
+        self.conv6_res = nn.Conv2d(128, 256, 1, stride=2)
+        self.conv6_2 = nn.Conv2d(256, 256, 3, padding='same')
+        self.conv6_3 = nn.Conv2d(256, 256, 3, padding='same')
+
         self.max_pool = nn.MaxPool2d(2)
         self.avg_pool = nn.AvgPool2d(2)
 
-        self.fc1 = nn.Linear(2048, 1024)
+        self.fc1 = nn.Linear(4096, 1024)
         self.fc2 = nn.Linear(1024, 128)
         self.fc3 = nn.Linear(128, 16)
-
-        self.fc4 = nn.Linear(400, 80)
-        self.fc5 = nn.Linear(80, 10)
-        self.fc6 = nn.Linear(10, 1)
+        self.fc4 = nn.Linear(16, 1)
 
     def forward(self, x):
-        sub_tensors = [x[:, :, i * 128:((i + 1) * 128)] for i in range(25)]
-        sub_output = []
+        x1 = self.max_pool(torch.relu(self.conv1(x)))
+        x2 = torch.relu(self.conv2_1(x1))
+        x2 = torch.relu(self.conv2_2(x2))
+        x1 = torch.relu(x1 + x2)
+        x2 = torch.relu(self.conv2_3(x1))
+        x2 = torch.relu(self.conv2_4(x2))
+        x1 = torch.relu(x1 + x2)
 
-        for i, item in enumerate(sub_tensors):
-            x1 = self.max_pool(torch.relu(self.conv1(item)))
-            x2 = torch.relu(self.conv2_1(x1))
-            x2 = torch.relu(self.conv2_2(x2))
-            x1 = torch.relu(x1 + x2)
-            x2 = torch.relu(self.conv2_3(x1))
-            x2 = torch.relu(self.conv2_4(x2))
-            x1 = torch.relu(x1 + x2)
+        x2 = self.max_pool(torch.relu(self.conv3(x1)))
+        x2 = torch.relu(self.conv3_1(x2))
+        x3 = torch.relu(self.conv3_res(x1))
+        x1 = torch.relu(x2 + x3)
+        x2 = torch.relu(self.conv3_2(x1))
+        x2 = torch.relu(self.conv3_3(x2))
+        x1 = torch.relu(x1 + x2)
 
-            x2 = self.max_pool(torch.relu(self.conv3(x1)))
-            x2 = torch.relu(self.conv3_1(x2))
-            x3 = torch.relu(self.conv3_res(x1))
-            x1 = torch.relu(x2 + x3)
-            x2 = torch.relu(self.conv3_2(x1))
-            x2 = torch.relu(self.conv3_3(x2))
-            x1 = torch.relu(x1 + x2)
+        x2 = self.max_pool(torch.relu(self.conv4(x1)))
+        x2 = torch.relu(self.conv4_1(x2))
+        x3 = torch.relu(self.conv4_res(x1))
+        x1 = torch.relu(x2 + x3)
+        x2 = torch.relu(self.conv4_2(x1))
+        x2 = torch.relu(self.conv4_3(x2))
+        x1 = torch.relu(x1 + x2)
 
-            x2 = self.max_pool(torch.relu(self.conv4(x1)))
-            x2 = torch.relu(self.conv4_1(x2))
-            x3 = torch.relu(self.conv4_res(x1))
-            x1 = torch.relu(x2 + x3)
-            x2 = torch.relu(self.conv4_2(x1))
-            x2 = torch.relu(self.conv4_3(x2))
-            x1 = torch.relu(x1 + x2)
+        x2 = self.max_pool(torch.relu(self.conv5(x1)))
+        x2 = torch.relu(self.conv5_1(x2))
+        x3 = torch.relu(self.conv5_res(x1))
+        x1 = torch.relu(x2 + x3)
+        x2 = torch.relu(self.conv5_2(x1))
+        x2 = torch.relu(self.conv5_3(x2))
+        x1 = torch.relu(x1 + x2)
 
-            x2 = self.max_pool(torch.relu(self.conv5(x1)))
-            x2 = torch.relu(self.conv5_1(x2))
-            x3 = torch.relu(self.conv5_res(x1))
-            x1 = torch.relu(x2 + x3)
-            x2 = torch.relu(self.conv5_2(x1))
-            x2 = torch.relu(self.conv5_3(x2))
-            x1 = torch.relu(x1 + x2)
+        x2 = self.max_pool(torch.relu(self.conv6(x1)))
+        x2 = torch.relu(self.conv6_1(x2))
+        x3 = torch.relu(self.conv6_res(x1))
+        x1 = torch.relu(x2 + x3)
+        x2 = torch.relu(self.conv6_2(x1))
+        x2 = torch.relu(self.conv6_3(x2))
+        x1 = torch.relu(x1 + x2)
 
-            x1 = self.avg_pool(x1)
+        x1 = self.avg_pool(x1)
 
-            x1 = torch.flatten(x1, start_dim=1)
+        x = torch.flatten(x1, start_dim=1)
 
-            x1 = torch.relu(self.fc1(x1))
-            x1 = torch.relu(self.fc2(x1))
-            x1 = torch.relu(self.fc3(x1))
-
-            sub_output.append(torch.flatten(x1, start_dim=1))
-
-        x = torch.cat(sub_output, dim=1)
-        x = torch.relu(self.fc4(x))
-        x = torch.relu(self.fc5(x))
-        x = torch.sigmoid(self.fc6(x))
-
+        x = torch.relu(self.fc1(x))
+        x = torch.relu(self.fc2(x))
+        x = torch.relu(self.fc3(x))
+        x = torch.sigmoid(self.fc4(x))
         return x
 
 
 def pred_score(image: Image) -> float:
-    if image.size[0] < 128 or image.size[1] < 128:
+    if image.size[0] < 256 or image.size[1] < 256:
         return 0.
     transformer = transforms.Compose([
         transforms.PILToTensor(),
@@ -114,17 +114,14 @@ def pred_score(image: Image) -> float:
     ])
     image_tensor = transformer(image)
 
-    sub_images = []
-    for i in range(25):
-        h_start = torch.randint(0, image_tensor.shape[1] - 128, (1,))
-        w_start = torch.randint(0, image_tensor.shape[2] - 128, (1,))
-        sub_images.append(image_tensor[:, h_start:h_start + 128, w_start:w_start + 128])
-    sub_tensors = torch.cat(sub_images, dim=1)[None, :]
+    h_start = torch.randint(0, image_tensor.shape[1] - 256, (1,)) if image_tensor.shape[1] > 256 else 0
+    w_start = torch.randint(0, image_tensor.shape[2] - 256, (1,)) if image_tensor.shape[2] > 256 else 0
+    image_tensor = image_tensor[:, h_start: h_start + 256, w_start: w_start + 256]
 
     net = Net()
     net.load_state_dict(torch.load(config['porn_detection_model'], map_location='cpu'))
     with torch.no_grad():
-        pred = net(sub_tensors)
+        pred = net(image_tensor)
     return pred.item()
 
 
