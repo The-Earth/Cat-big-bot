@@ -106,8 +106,6 @@ class Net(nn.Module):
 
 
 def pred_score(image: Image) -> float:
-    if image.size[0] < 256 or image.size[1] < 256:
-        return 0.
     transformer = transforms.Compose([
         transforms.PILToTensor(),
         transforms.ConvertImageDtype(torch.float32),
@@ -155,17 +153,17 @@ def porn_detect_main():
             return
         if event.photo is None:
             return
-        if int(chat_id) == bot.id or int(user_id) < 5400000000:
-            return
+        # if int(chat_id) == bot.id or int(user_id) < 5400000000:   # TODO
+        #     return
         msg_id = event.id
 
         photo_buff = await event.download_media(file=bytes, thumb=-1)
         image = Image.open(BytesIO(photo_buff))
-        if image.size[0] < 200 or image.size[1] < 200:
+        if image.size[0] < 256 or image.size[1] < 256:
             return
         bot.api('sendChatAction', {'chat_id': config['porn_alert_chat'], 'action': 'typing'})
         pred = pred_score(image)
-        if pred > 0.7:
+        if pred > 0.5:  # TODO
             link = f't.me/c/{str(chat_id).replace("-100", "")}/{msg_id}'
             prob_text = f'{pred * 100:.0f}%'
             bot.send_message(config['porn_alert_chat'],
