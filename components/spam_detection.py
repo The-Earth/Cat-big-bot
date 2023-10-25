@@ -141,7 +141,7 @@ def porn_detect_tester(msg: catbot.Message):
 
 
 def porn_detect_main():
-    client = TelegramClient('detect', config['api_id'], config['api_hash'])
+    client = TelegramClient('spam_detection', config['api_id'], config['api_hash'])
 
     @client.on(events.NewMessage())
     async def porn_detect(event: NewMessage):
@@ -167,7 +167,7 @@ def porn_detect_main():
             link = f't.me/c/{str(chat_id).replace("-100", "")}/{msg_id}'
             prob_text = f'{pred * 100:.0f}%'
             bot.send_message(config['porn_alert_chat'],
-                             text=config['messages']['porn_detected_alert'].format(link=link, prob=prob_text))
+                             text=config['messages']['porn_detected_alert'].format(link=link, prob=prob_text))  # TODO
 
     client.start()
     client.run_until_disconnected()

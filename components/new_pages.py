@@ -1,7 +1,7 @@
 import json
 
 import catbot
-from catbot.util import html_refer
+from catbot.util import html_escape
 from components import bot, config
 from sseclient import SSEClient
 
@@ -127,7 +127,7 @@ def new_pages():
 
 def sending_trials(chat_id: int, title: str, user: str):
     try:
-        text = f'<a href="https://zh.wikipedia.org/wiki/{html_refer(title)}?redirect=no">{html_refer(title)}</a>' \
+        text = f'<a href="https://zh.wikipedia.org/wiki/{html_escape(title)}?redirect=no">{html_escape(title)}</a>' \
                f' - <a href="https://zh.wikipedia.org/wiki/Special:Contributions/{user}">{user}</a>'
         bot.send_message(chat_id, text=text, parse_mode='HTML')
     except catbot.APIError as e:
