@@ -2,64 +2,84 @@ import json
 
 import catbot
 from catbot.util import html_escape
-from components import bot, config
+from components import bot
 from sseclient import SSEClient
+
+__all__ = [
+    'start_new_pages',
+    'stop_new_pages',
+    'list_ns',
+    'set_ns'
+]
 
 
 def start_new_pages_cri(msg: catbot.Message) -> bool:
     return bot.detect_command('/start_new_pages', msg)
 
 
+@bot.msg_task(start_new_pages_cri)
 def start_new_pages(msg: catbot.Message):
-    new_pages_rec, rec = bot.secure_record_fetch('new_pages', dict)
+    if 'new_pages' in bot.record:
+        new_pages_rec = bot.record['new_pages']
+    else:
+        new_pages_rec = {}
 
     if str(msg.chat.id) in new_pages_rec.keys():
         new_pages_rec[str(msg.chat.id)]['enable'] = True
     else:
         new_pages_rec[str(msg.chat.id)] = {'enable': True, 'ns': []}
 
-    rec['new_pages'] = new_pages_rec
-    json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
-    bot.send_message(msg.chat.id,
-                     text=config['messages']['start_new_pages_succ'].format(ns=new_pages_rec[str(msg.chat.id)]["ns"]),
-                     reply_to_message_id=msg.id)
+    bot.record['new_pages'] = new_pages_rec
+    bot.send_message(
+        msg.chat.id,
+        text=bot.config['messages']['start_new_pages_succ'].format(ns=new_pages_rec[str(msg.chat.id)]["ns"]),
+        reply_to_message_id=msg.id
+    )
 
 
 def stop_new_pages_cri(msg: catbot.Message) -> bool:
     return bot.detect_command('/stop_new_pages', msg)
 
 
+@bot.msg_task(stop_new_pages_cri)
 def stop_new_pages(msg: catbot.Message):
-    new_pages_rec, rec = bot.secure_record_fetch('new_pages', list)
+    if 'new_pages' in bot.record:
+        new_pages_rec = bot.record['new_pages']
+    else:
+        new_pages_rec = {}
 
     if str(msg.chat.id) in new_pages_rec.keys():
         new_pages_rec[str(msg.chat.id)]['enable'] = False
     else:
         new_pages_rec[str(msg.chat.id)] = {'enable': False, 'ns': []}
 
-    rec['new_pages'] = new_pages_rec
-    json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
-    bot.send_message(msg.chat.id, text=config['messages']['stop_new_pages_succ'], reply_to_message_id=msg.id)
+    bot.record['new_pages'] = new_pages_rec
+    bot.send_message(msg.chat.id, text=bot.config['messages']['stop_new_pages_succ'], reply_to_message_id=msg.id)
 
 
 def list_ns_cri(msg: catbot.Message) -> bool:
     return bot.detect_command('/list_ns', msg)
 
 
+@bot.msg_task(list_ns_cri)
 def list_ns(msg: catbot.Message):
-    bot.send_message(msg.chat.id, text=config['messages']['list_ns'], reply_to_message_id=msg.id)
+    bot.send_message(msg.chat.id, text=bot.config['messages']['list_ns'], reply_to_message_id=msg.id)
 
 
 def set_ns_cri(msg: catbot.Message) -> bool:
     return bot.detect_command('/set_ns', msg)
 
 
+@bot.msg_task(set_ns_cri)
 def set_ns(msg: catbot.Message):
-    new_pages_rec, rec = bot.secure_record_fetch('new_pages', list)
+    if 'new_pages' in bot.record:
+        new_pages_rec = bot.record['new_pages']
+    else:
+        new_pages_rec = {}
 
     user_input_token = msg.text.split(' ')
     if len(user_input_token) == 1:
-        bot.send_message(msg.chat.id, text=config['messages']['set_ns_prompt'], reply_to_message_id=msg.id)
+        bot.send_message(msg.chat.id, text=bot.config['messages']['set_ns_prompt'], reply_to_message_id=msg.id)
         return
     else:
         ns = []
@@ -75,21 +95,22 @@ def set_ns(msg: catbot.Message):
         new_pages_rec[str(msg.chat.id)] = {'enable': False, 'ns': ns}
 
     if len(ns) == 0:
-        bot.send_message(msg.chat.id, text=config['messages']['set_ns_failed'], reply_to_message_id=msg.id)
+        bot.send_message(msg.chat.id, text=bot.config['messages']['set_ns_failed'], reply_to_message_id=msg.id)
     else:
-        resp_text: str = config['messages']['set_ns_succ']
+        resp_text: str = bot.config['messages']['set_ns_succ']
         for item in ns:
             resp_text += str(item) + ', '
         resp_text = resp_text.rstrip(', ')
-        rec['new_pages'] = new_pages_rec
-        json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+        bot.record['new_pages'] = new_pages_rec
         bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id)
 
 
-def new_pages():
+def new_pages(stop_event):
     event_url = 'https://stream.wikimedia.org/v2/stream/page-create'
-    ssekw = {'proxies': {'https': config['proxy']['proxy_url']}} if config['proxy']['enable'] else {}
-    for event in SSEClient(event_url, **ssekw):
+    sse_kw = {'proxies': {'https': bot.config['proxy']['proxy_url']}} if bot.config['proxy']['enable'] else {}
+    for event in SSEClient(event_url, **sse_kw):
+        if stop_event.is_set():
+            break
         if event.event != 'message':
             continue
         try:
@@ -102,17 +123,10 @@ def new_pages():
             title: str = change['page_title']
             user: str = change['performer']['user_text']
 
-            try:
-                new_pages_rec = json.load(open(config['record'], 'r', encoding='utf-8'))['new_pages']
-            except FileNotFoundError:
-                json.dump({'new_pages': {}}, open(config['record'], 'w', encoding='utf-8'), indent=2,
-                          ensure_ascii=False)
-                continue
-            except KeyError:
-                rec = json.load(open(config['record'], 'r', encoding='utf-8'))
-                rec['new_pages'] = {}
-                json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
-                continue
+            if 'new_pages' in bot.record:
+                new_pages_rec = bot.record['new_pages']
+            else:
+                new_pages_rec = {}
 
             for chat_id in new_pages_rec.keys():
                 if not new_pages_rec[chat_id]['enable']:
@@ -135,18 +149,22 @@ def sending_trials(chat_id: int, title: str, user: str):
         if 'user is deactivated' in e.args[0] or 'chat_not found' in e.args[0]:
             print(f'Removing {chat_id}')
             try:
-                rec: dict = json.load(open(config['record'], 'r', encoding='utf-8'))
-                new_pages_rec: dict = rec['new_pages']
-                new_pages_rec.pop(str(chat_id))
-                json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+                if 'new_pages' in bot.record:
+                    new_pages_rec = bot.record['new_pages']
+                else:
+                    new_pages_rec = {}
+                new_pages_rec.pop(str(chat_id), '')
+                bot.record = new_pages_rec
             except KeyError:
                 pass
 
 
-def new_pages_main():
+def new_pages_main(stop_event):
     from requests.exceptions import HTTPError, ConnectionError
-    while True:
+    while not stop_event.is_set():
         try:
-            new_pages()
+            new_pages(stop_event)
         except (HTTPError, ConnectionError, ConnectionResetError):
             continue
+        except KeyboardInterrupt:
+            break

@@ -1,9 +1,13 @@
-import json
-
 import catbot
 
-from components import trusted
-from components import bot, config, t_lock
+from components.decorators import trusted
+from components import bot, t_lock
+
+__all__ = [
+    'show_joining',
+    'set_show_joining',
+    'unset_show_joining'
+]
 
 
 @trusted
@@ -11,14 +15,19 @@ def set_show_joining_cri(msg: catbot.Message) -> bool:
     return bot.detect_command('/show_joining', msg) and msg.chat.type == 'supergroup'
 
 
+@bot.msg_task(set_show_joining_cri)
 def set_show_joining(msg: catbot.Message):
     with t_lock:
-        show_joining_set, rec = bot.secure_record_fetch('show_joining', list)
-        show_joining_set.append(msg.chat.id)
-        rec['show_joining'] = show_joining_set
-        json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+        if 'show_joining' in bot.record:
+            show_joining_list: list = bot.record['show_joining']
+        else:
+            show_joining_list = []
+        show_joining_set = set(show_joining_list)
+        show_joining_set.add(msg.chat.id)
+        show_joining_list = list(show_joining_set)
+        bot.record['show_joining'] = show_joining_list
 
-    bot.send_message(msg.chat.id, text=config['messages']['set_show_joining_succ'], reply_to_message_id=msg.id)
+    bot.send_message(msg.chat.id, text=bot.config['messages']['set_show_joining_succ'], reply_to_message_id=msg.id)
 
 
 def show_joining_cri(msg: catbot.ChatMemberUpdate) -> bool:
@@ -30,17 +39,25 @@ def show_joining_cri(msg: catbot.ChatMemberUpdate) -> bool:
         return False
 
 
+@bot.member_status_task(show_joining_cri)
 def show_joining(msg: catbot.ChatMemberUpdate):
     with t_lock:
-        show_joining_set, rec = bot.secure_record_fetch('show_joining', list)
+        if 'show_joining' in bot.record:
+            show_joining_list: list = bot.record['show_joining']
+        else:
+            show_joining_list = []
 
-    if msg.chat.id not in show_joining_set:
+    if msg.chat.id not in show_joining_list:
         return
 
-    bot.send_message(msg.chat.id,
-                     text=config['messages']['show_joining'].format(user_id=msg.new_chat_member.id,
-                                                                                 user_name=msg.new_chat_member.name),
-                     parse_mode='HTML')
+    bot.send_message(
+        msg.chat.id,
+        text=bot.config['messages']['show_joining'].format(
+            user_id=msg.new_chat_member.id,
+            user_name=msg.new_chat_member.name
+        ),
+        parse_mode='HTML'
+    )
 
 
 @trusted
@@ -48,12 +65,15 @@ def unset_show_joining_cri(msg: catbot.Message) -> bool:
     return bot.detect_command('/hide_joining', msg) and msg.chat.type == 'supergroup'
 
 
+@bot.msg_task(unset_show_joining_cri)
 def unset_show_joining(msg: catbot.Message):
     with t_lock:
-        helper_set, rec = bot.secure_record_fetch('show_joining', list)
-        if msg.chat.id in helper_set:
-            helper_set.remove(msg.chat.id)
-        rec['show_joining'] = helper_set
-        json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+        if 'show_joining' in bot.record:
+            show_joining_list: list = bot.record['show_joining']
+        else:
+            show_joining_list = []
+        if msg.chat.id in show_joining_list:
+            show_joining_list.remove(msg.chat.id)
+        bot.record['show_joining'] = show_joining_list
 
-    bot.send_message(msg.chat.id, text=config['messages']['unset_show_joining_succ'], reply_to_message_id=msg.id)
+    bot.send_message(msg.chat.id, text=bot.config['messages']['unset_show_joining_succ'], reply_to_message_id=msg.id)

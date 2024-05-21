@@ -8,7 +8,11 @@ from PIL import Image
 from telethon import TelegramClient, events
 from telethon.events.newmessage import NewMessage
 
-from components import bot, config
+from components import bot
+
+__all__ = [
+    'porn_detect_tester'
+]
 
 
 class Net(nn.Module):
@@ -117,16 +121,17 @@ def pred_score(image: Image) -> float:
     image_tensor = image_tensor[:, h_start: h_start + 256, w_start: w_start + 256][None, :]
 
     net = Net()
-    net.load_state_dict(torch.load(config['porn_detection_model'], map_location='cpu'))
+    net.load_state_dict(torch.load(bot.config['porn_detection_model'], map_location='cpu'))
     with torch.no_grad():
         pred = net(image_tensor)
     return pred.item()
 
 
 def porn_detect_tester_cri(msg: catbot.Message) -> bool:
-    return msg.chat.id == config['operator_id'] and msg.has_photo
+    return msg.chat.id == bot.config['operator_id'] and msg.has_photo
 
 
+@bot.msg_task(porn_detect_tester_cri)
 def porn_detect_tester(msg: catbot.Message):
     if not msg.has_photo:
         return
@@ -136,12 +141,12 @@ def porn_detect_tester(msg: catbot.Message):
     pred = pred_score(image)
     prob = f'{pred * 100:.2f}'
 
-    bot.send_message(msg.chat.id, text=config['messages']['porn_detection_tester'].format(prob=prob),
+    bot.send_message(msg.chat.id, text=bot.config['messages']['porn_detection_tester'].format(prob=prob),
                      reply_to_message_id=msg.id)
 
 
 def porn_detect_main():
-    client = TelegramClient('spam_detection', config['api_id'], config['api_hash'])
+    client = TelegramClient('spam_detection', bot.config['api_id'], bot.config['api_hash'])
 
     @client.on(events.NewMessage())
     async def porn_detect(event: NewMessage):
@@ -161,13 +166,13 @@ def porn_detect_main():
         image = Image.open(BytesIO(photo_buff))
         if image.size[0] < 256 or image.size[1] < 256:
             return
-        bot.api('sendChatAction', {'chat_id': config['porn_alert_chat'], 'action': 'typing'})
+        bot.api('sendChatAction', {'chat_id': bot.config['porn_alert_chat'], 'action': 'typing'})
         pred = pred_score(image)
-        if pred > 0.5:  # TODO
+        if pred > 0.8:  # TODO
             link = f't.me/c/{str(chat_id).replace("-100", "")}/{msg_id}'
             prob_text = f'{pred * 100:.0f}%'
-            bot.send_message(config['porn_alert_chat'],
-                             text=config['messages']['porn_detected_alert'].format(link=link, prob=prob_text))  # TODO
+            bot.send_message(bot.config['porn_alert_chat'],
+                             text=bot.config['messages']['porn_detected_alert'].format(link=link, prob=prob_text))  # TODO
 
     client.start()
     client.run_until_disconnected()

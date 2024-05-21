@@ -1,12 +1,22 @@
-import json
 import time
+from multiprocessing import Event
 
 import catbot
 import dateparser
 
 from poll import Poll
-from components import trusted
-from components import bot, config, t_lock, p_lock
+from components.decorators import trusted
+from components import bot, t_lock, p_lock
+
+__all__ = [
+    'set_voter',
+    'list_voter',
+    'unset_voter',
+    'init_poll',
+    'start_poll',
+    'stop_poll',
+    'abort_poll'
+]
 
 
 def get_poll_text(p: Poll) -> str:
@@ -29,8 +39,12 @@ def get_poll_text(p: Poll) -> str:
             else:
                 voted_user_dict[user_id] = user.name
 
-    output = config['messages']['poll'].format(title=p.title, start_time=start_time, end_time=end_time,
-                                               total=total_votes)
+    output = bot.config['messages']['poll'].format(
+        title=p.title,
+        start_time=start_time,
+        end_time=end_time,
+        total=total_votes
+    )
 
     for option in p.option_list:
         output += f'{option["text"]}\n'
@@ -53,6 +67,7 @@ def set_voter_cri(msg: catbot.Message) -> bool:
     return bot.detect_command('/set_voter', msg) and msg.chat.type != 'private'
 
 
+@bot.msg_task(set_voter_cri)
 def set_voter(msg: catbot.Message):
     new_voter_id = []
     if msg.reply:
@@ -60,7 +75,7 @@ def set_voter(msg: catbot.Message):
     else:
         user_input_token = msg.text.split()
         if len(user_input_token) == 1:
-            bot.send_message(msg.chat.id, text=config['messages']['set_voter_prompt'], reply_to_message_id=msg.id)
+            bot.send_message(msg.chat.id, text=bot.config['messages']['set_voter_prompt'], reply_to_message_id=msg.id)
             return
         else:
             for item in user_input_token[1:]:
@@ -69,7 +84,10 @@ def set_voter(msg: catbot.Message):
                 except ValueError:
                     continue
     with t_lock:
-        voter_dict, rec = bot.secure_record_fetch('voter', dict)
+        if 'voter' in bot.record:
+            voter_dict = bot.record['voter']
+        else:
+            voter_dict = {}
         if str(msg.chat.id) not in voter_dict.keys():
             voter_dict[str(msg.chat.id)] = []
         voter_set = set(voter_dict[str(msg.chat.id)])
@@ -77,15 +95,14 @@ def set_voter(msg: catbot.Message):
         voter_set.update(new_voter_id)
         delta = voter_set - old_voter_set
         if len(delta) == 0:
-            bot.send_message(msg.chat.id, text=config['messages']['set_voter_failed'], reply_to_message_id=msg.id)
+            bot.send_message(msg.chat.id, text=bot.config['messages']['set_voter_failed'], reply_to_message_id=msg.id)
         else:
-            reply_text = config['messages']['set_voter_succ']
+            reply_text = bot.config['messages']['set_voter_succ']
             for item in delta:
                 reply_text += str(item) + '\n'
 
             voter_dict[str(msg.chat.id)] = list(voter_set)
-            rec['voter'] = voter_dict
-            json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+            bot.record['voter'] = voter_dict
             bot.send_message(msg.chat.id, text=reply_text, reply_to_message_id=msg.id)
 
 
@@ -94,11 +111,15 @@ def list_voter_cri(msg: catbot.Message) -> bool:
     return bot.detect_command('/list_voter', msg) and msg.chat.type != 'private'
 
 
+@bot.msg_task(list_voter_cri)
 def list_voter(msg: catbot.Message):
     resp_list = []
     bot.api('sendChatAction', {'chat_id': msg.chat.id, 'action': 'typing'})
     with t_lock:
-        voter_dict, rec = bot.secure_record_fetch('voter', dict)
+        if 'voter' in bot.record:
+            voter_dict = bot.record['voter']
+        else:
+            voter_dict = {}
         if str(msg.chat.id) in voter_dict.keys():
             for voter_id in voter_dict[str(msg.chat.id)]:
                 try:
@@ -110,12 +131,12 @@ def list_voter(msg: catbot.Message):
                 else:
                     resp_list.append(voter_user)
 
-    resp_text: str = config['messages']['list_voter_succ']
+    resp_text: str = bot.config['messages']['list_voter_succ']
     for user in resp_list:
         resp_text += f'{user.name}、'
     resp_text = resp_text.rstrip('、')
     if len(resp_list) == 0:
-        resp_text = config['messages']['list_voter_empty']
+        resp_text = bot.config['messages']['list_voter_empty']
 
     bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id)
 
@@ -125,9 +146,13 @@ def unset_voter_cri(msg: catbot.Message) -> bool:
     return bot.detect_command('/unset_voter', msg)
 
 
+@bot.msg_task(unset_voter_cri)
 def unset_voter(msg: catbot.Message):
     with t_lock:
-        voter_dict, rec = bot.secure_record_fetch('voter', dict)
+        if 'voter' in bot.record:
+            voter_dict = bot.record['voter']
+        else:
+            voter_dict = {}
 
         user_input_token = msg.text.split()
         rm_voter_list = []
@@ -136,11 +161,15 @@ def unset_voter(msg: catbot.Message):
             if msg.reply_to_message.from_.id in voter_dict[str(msg.chat.id)]:
                 voter_dict[str(msg.chat.id)].remove(msg.reply_to_message.from_.id)
             else:
-                bot.send_message(msg.chat.id, text=config['messages']['unset_voter_failed'], reply_to_message_id=msg.id)
+                bot.send_message(
+                    msg.chat.id,
+                    text=bot.config['messages']['unset_voter_failed'],
+                    reply_to_message_id=msg.id
+                )
                 return
         else:
             if len(user_input_token) == 1:
-                bot.send_message(msg.chat.id, text=config['messages']['unset_voter_prompt'],
+                bot.send_message(msg.chat.id, text=bot.config['messages']['unset_voter_prompt'],
                                  reply_to_message_id=msg.id)
                 return
             else:
@@ -153,11 +182,10 @@ def unset_voter(msg: catbot.Message):
                         rm_voter_list.append(item)
 
         if len(rm_voter_list) == 0:
-            bot.send_message(msg.chat.id, text=config['messages']['unset_voter_failed'], reply_to_message_id=msg.id)
+            bot.send_message(msg.chat.id, text=bot.config['messages']['unset_voter_failed'], reply_to_message_id=msg.id)
         else:
-            rec['voter'] = voter_dict
-            json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
-            resp_text = config['messages']['unset_voter_succ'] + '\n'.join(rm_voter_list)
+            bot.record['voter'] = voter_dict
+            resp_text = bot.config['messages']['unset_voter_succ'] + '\n'.join(rm_voter_list)
             bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id)
 
 
@@ -166,10 +194,11 @@ def init_poll_cri(msg: catbot.Message) -> bool:
     return bot.detect_command('/init_poll', msg) and msg.chat.type != 'private'
 
 
+@bot.msg_task(init_poll_cri)
 def init_poll(msg: catbot.Message):
     user_input_token = msg.html_formatted_text.split()
     if len(user_input_token) == 1:
-        bot.send_message(msg.chat.id, text=config['messages']['init_poll_failed'], reply_to_message_id=msg.id)
+        bot.send_message(msg.chat.id, text=bot.config['messages']['init_poll_failed'], reply_to_message_id=msg.id)
         return
     poll_chat_id = int(str(msg.chat.id).replace('-100', ''))
     p = Poll(poll_chat_id, msg.id)
@@ -224,37 +253,40 @@ def init_poll(msg: catbot.Message):
                 try:
                     p.privilege_level = int(user_input_token[i])
                 except ValueError:
-                    bot.send_message(msg.chat.id, text=config['messages']['init_poll_failed'],
+                    bot.send_message(msg.chat.id, text=bot.config['messages']['init_poll_failed'],
                                      reply_to_message_id=msg.id)
                     return
                 else:
                     i += 1
                     break
         else:  # format error
-            bot.send_message(msg.chat.id, text=config['messages']['init_poll_failed'], reply_to_message_id=msg.id)
+            bot.send_message(msg.chat.id, text=bot.config['messages']['init_poll_failed'], reply_to_message_id=msg.id)
             return
 
     if len(p.option_list) == 0:
-        bot.send_message(msg.chat.id, text=config['messages']['init_poll_failed'], reply_to_message_id=msg.id)
+        bot.send_message(msg.chat.id, text=bot.config['messages']['init_poll_failed'], reply_to_message_id=msg.id)
         return
 
     with t_lock:
-        poll_list, rec = bot.secure_record_fetch('poll', list)
+        if 'poll' in bot.record:
+            poll_list = bot.record['poll']
+        else:
+            poll_list = []
         poll_list.append(p.to_json())
-        rec['poll'] = poll_list
-        json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+        bot.record['poll'] = poll_list
 
-    resp_text = config['messages']['init_poll_succ'].format(title=p.title,
-                                                            last=p.readable_time,
-                                                            anon_open=p.anonymous_open,
-                                                            anon_closed=p.anonymous_closed,
-                                                            count_open=p.count_open,
-                                                            multiple=p.multiple,
-                                                            privilege=config['messages']['vote_privilege'][
-                                                                str(p.privilege_level)])
-    start_button = catbot.InlineKeyboardButton(config['messages']['start_poll_button'],
+    resp_text = bot.config['messages']['init_poll_succ'].format(
+        title=p.title,
+        last=p.readable_time,
+        anon_open=p.anonymous_open,
+        anon_closed=p.anonymous_closed,
+        count_open=p.count_open,
+        multiple=p.multiple,
+        privilege=bot.config['messages']['vote_privilege'][str(p.privilege_level)]
+    )
+    start_button = catbot.InlineKeyboardButton(bot.config['messages']['start_poll_button'],
                                                callback_data=f'vote_{p.chat_id}_{p.init_id}_start')
-    abort_button = catbot.InlineKeyboardButton(config['messages']['abort_poll_button'],
+    abort_button = catbot.InlineKeyboardButton(bot.config['messages']['abort_poll_button'],
                                                callback_data=f'vote_{p.chat_id}_{p.init_id}_abort')
     keyboard = catbot.InlineKeyboard([[start_button, abort_button]])
     bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id, reply_markup=keyboard, parse_mode='HTML')
@@ -265,6 +297,7 @@ def start_poll_cri(query: catbot.CallbackQuery) -> bool:
     return query.data.startswith('vote_') and query.data.endswith('_start')
 
 
+@bot.query_task(start_poll_cri)
 def start_poll(query: catbot.CallbackQuery):
     data_token = query.data.split('_')
     try:
@@ -275,13 +308,17 @@ def start_poll(query: catbot.CallbackQuery):
         return
 
     with t_lock:
-        poll_list, rec = bot.secure_record_fetch('poll', list)
+        if 'poll' in bot.record:
+            poll_list = bot.record['poll']
+        else:
+            poll_list = []
+
         for i in range(len(poll_list)):
             p = Poll.from_json(poll_list[i])
             if p.chat_id == cmd_chat_id and p.init_id == cmd_id:
                 break
         else:
-            bot.answer_callback_query(query.id, text=config['messages']['start_poll_not_found'])
+            bot.answer_callback_query(query.id, text=bot.config['messages']['start_poll_not_found'])
             return
 
         p.start()
@@ -291,19 +328,18 @@ def start_poll(query: catbot.CallbackQuery):
             option = p.option_list[j]
             button_list.append([catbot.InlineKeyboardButton(option['text'],
                                                             callback_data=f'vote_{p.chat_id}_{p.init_id}_{j}')])
-        button_list.append([catbot.InlineKeyboardButton(config['messages']['stop_poll_button'],
+        button_list.append([catbot.InlineKeyboardButton(bot.config['messages']['stop_poll_button'],
                                                         callback_data=f'vote_{p.chat_id}_{p.init_id}_stop')])
         keyboard = catbot.InlineKeyboard(button_list)
 
         poll_msg: catbot.Message = bot.send_message(query.msg.chat.id, text=get_poll_text(p), reply_markup=keyboard,
                                                     reply_to_message_id=query.msg.id, parse_mode='HTML')
         bot.edit_message(query.msg.chat.id, query.msg.id, text=query.msg.html_formatted_text, parse_mode='HTML')
-        bot.answer_callback_query(query.id, text=config['messages']['start_poll_answer'])
+        bot.answer_callback_query(query.id, text=bot.config['messages']['start_poll_answer'])
 
         p.poll_id = poll_msg.id
         poll_list[i] = p.to_json()
-        rec['poll'] = poll_list
-        json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+        bot.record['poll'] = poll_list
 
 
 @trusted
@@ -311,6 +347,7 @@ def abort_poll_cri(query: catbot.CallbackQuery) -> bool:
     return query.data.startswith('vote_') and query.data.endswith('_abort')
 
 
+@bot.query_task(abort_poll_cri)
 def abort_poll(query: catbot.CallbackQuery):
     data_token = query.data.split('_')
     try:
@@ -321,22 +358,27 @@ def abort_poll(query: catbot.CallbackQuery):
         return
 
     with t_lock:
-        poll_list, rec = bot.secure_record_fetch('poll', list)
+        if 'poll' in bot.record:
+            poll_list = bot.record['poll']
+        else:
+            poll_list = []
         for i in range(len(poll_list)):
             p = Poll.from_json(poll_list[i])
             if p.chat_id == cmd_chat_id and p.init_id == cmd_id:
                 poll_list.pop(i)
                 break
         else:
-            bot.answer_callback_query(query.id, text=config['messages']['start_poll_not_found'])
+            bot.answer_callback_query(query.id, text=bot.config['messages']['start_poll_not_found'])
             return
 
-        bot.edit_message(query.msg.chat.id, query.msg.id,
-                         text=config['messages']['abort_poll_title'] + query.msg.html_formatted_text, parse_mode='HTML')
-        bot.answer_callback_query(query.id, text=config['messages']['abort_poll_answer'])
+        bot.record['poll'] = poll_list
 
-        rec['poll'] = poll_list
-        json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+    bot.edit_message(
+        query.msg.chat.id,
+        query.msg.id,
+        text=bot.config['messages']['abort_poll_title'] + query.msg.html_formatted_text, parse_mode='HTML'
+    )
+    bot.answer_callback_query(query.id, text=bot.config['messages']['abort_poll_answer'])
 
 
 def vote_cri(query: catbot.CallbackQuery) -> bool:
@@ -344,11 +386,18 @@ def vote_cri(query: catbot.CallbackQuery) -> bool:
                                                    or query.data.endswith('_abort'))
 
 
+@bot.query_task(vote_cri)
 def vote(query: catbot.CallbackQuery):
     callback_token = query.data.split('_')
-    voter_dict = bot.secure_record_fetch('voter', dict)[0]
-    trusted_list = bot.secure_record_fetch('trusted', list)[0]
-    ac_list = bot.secure_record_fetch('ac', list, file=config['ac_record'])[0]
+    if 'voter' in bot.record:
+        voter_dict = bot.record['voter']
+    else:
+        voter_dict = {}
+    if 'trusted' in bot.record:
+        trusted_list = bot.record['trusted']
+    else:
+        trusted_list = {}
+    ac_list = bot.secure_record_fetch('ac', list, file=bot.config['ac_record'])[0]
 
     if str(query.msg.chat.id) in voter_dict.keys():
         voter_list = voter_dict[str(query.msg.chat.id)] + trusted_list
@@ -367,49 +416,59 @@ def vote(query: catbot.CallbackQuery):
         return
 
     with t_lock:
-        poll_list, rec = bot.secure_record_fetch('poll', list)
+        if 'poll' in bot.record:
+            poll_list = bot.record['poll']
+        else:
+            poll_list = []
+
         for i in range(len(poll_list)):
             p = Poll.from_json(poll_list[i])
 
             if p.chat_id == callback_chat_id and p.init_id == callback_init_id and p.open:
                 # privilege check
                 if p.privilege_level == 1 and query.from_.id not in voter_list:
-                    bot.answer_callback_query(query.id, text=config['messages']['vote_ineligible'])
+                    bot.answer_callback_query(query.id, text=bot.config['messages']['vote_ineligible'])
                     return
                 if p.privilege_level == 2 and query.from_.id not in voter_list:
                     for user in ac_list:
                         if user['telegram_id'] == query.from_.id and not user['confirmed']:
-                            bot.answer_callback_query(query.id, text=config['messages']['vote_ineligible'])
+                            bot.answer_callback_query(query.id, text=bot.config['messages']['vote_ineligible'])
                             return
                         if user['telegram_id'] == query.from_.id and user['confirmed']:
                             break
                     else:
-                        bot.answer_callback_query(query.id, text=config['messages']['vote_ineligible'])
+                        bot.answer_callback_query(query.id, text=bot.config['messages']['vote_ineligible'])
                         return
 
                 p.vote(query.from_.id, choice)
 
                 poll_list[i] = p.to_json()
-                rec['poll'] = poll_list
-                json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
-
-                bot.answer_callback_query(query.id, text=config['messages']['vote_received'], show_alert=True)
-                button_list = []
-                for j in range(len(p.option_list)):
-                    option = p.option_list[j]
-                    button_list.append([catbot.InlineKeyboardButton(option['text'],
-                                                                    callback_data=f'vote_{p.chat_id}_{p.init_id}_{j}')])
-                button_list.append([catbot.InlineKeyboardButton(config['messages']['stop_poll_button'],
-                                                                callback_data=f'vote_{p.chat_id}_{p.init_id}_stop')])
-                keyboard = catbot.InlineKeyboard(button_list)
-
-                bot.edit_message('-100' + str(callback_chat_id), p.poll_id, text=get_poll_text(p),
-                                 reply_markup=keyboard, parse_mode='HTML')
+                bot.record['poll'] = poll_list
                 break
 
             elif p.chat_id == callback_chat_id and p.init_id == callback_init_id and not p.open:
-                bot.answer_callback_query(query.id, text=config['messages']['vote_poll_stopped'], show_alert=True)
-                break
+                bot.answer_callback_query(query.id, text=bot.config['messages']['vote_poll_stopped'], show_alert=True)
+                return
+
+        bot.answer_callback_query(query.id, text=bot.config['messages']['vote_received'], show_alert=True)
+        button_list = []
+        for j in range(len(p.option_list)):
+            option = p.option_list[j]
+            button_list.append([catbot.InlineKeyboardButton(
+                option['text'],
+                callback_data=f'vote_{p.chat_id}_{p.init_id}_{j}'
+            )])
+        button_list.append([catbot.InlineKeyboardButton(
+            bot.config['messages']['stop_poll_button'],
+            callback_data=f'vote_{p.chat_id}_{p.init_id}_stop'
+        )])
+        keyboard = catbot.InlineKeyboard(button_list)
+
+        bot.edit_message(
+            '-100' + str(callback_chat_id),
+            p.poll_id, text=get_poll_text(p),
+            reply_markup=keyboard, parse_mode='HTML'
+        )
 
 
 @trusted
@@ -417,6 +476,7 @@ def stop_poll_cri(query: catbot.CallbackQuery) -> bool:
     return query.data.startswith('vote') and query.data.endswith('_stop')
 
 
+@bot.query_task(stop_poll_cri)
 def stop_poll(query: catbot.CallbackQuery):
     callback_token = query.data.split('_')
     if not len(callback_token) == 4:
@@ -430,26 +490,35 @@ def stop_poll(query: catbot.CallbackQuery):
         return
 
     with t_lock:
-        poll_list, rec = bot.secure_record_fetch('poll', list)
+        if 'poll' in bot.record:
+            poll_list = bot.record['poll']
+        else:
+            poll_list = []
         for i in range(len(poll_list)):
             p = Poll.from_json(poll_list[i])
 
-            if p.chat_id == callback_chat_id and p.init_id == callback_init_id and p.open:
+            if p.cbot.hat_id == callback_chat_id and p.init_id == callback_init_id and p.open:
                 p.stop()
                 poll_list.pop(i)
-                rec['poll'] = poll_list
-                json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+                bot.record['poll'] = poll_list
 
                 bot.answer_callback_query(query.id)
-                resp_text = config['messages']['stop_poll_title']
-                bot.edit_message('-100' + str(callback_chat_id), p.poll_id,
-                                 text=resp_text + get_poll_text(p), parse_mode='HTML')
+                resp_text = bot.config['messages']['stop_poll_title']
+                bot.edit_message(
+                    '-100' + str(callback_chat_id),
+                    p.poll_id,
+                    text=resp_text + get_poll_text(p),
+                    parse_mode='HTML'
+                )
                 break
 
 
 def stop_poll_scheduled():
     with p_lock:
-        poll_list, rec = bot.secure_record_fetch('poll', list)
+        if 'poll' in bot.record:
+            poll_list = bot.record['poll']
+        else:
+            poll_list = []
 
         i = 0
         while i < (len(poll_list)):
@@ -457,20 +526,24 @@ def stop_poll_scheduled():
             if time.time() > p.end_time and p.open:
                 p.stop()
                 poll_list.pop(i)
-                rec['poll'] = poll_list
-                json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+                bot.record['poll'] = poll_list
 
-                bot.send_message('-100' + str(p.chat_id),
-                                 text=config['messages']['stop_poll_scheduled'].format(title=p.title),
-                                 parse_mode='HTML', reply_to_message_id=p.poll_id)
-                resp_text = config['messages']['stop_poll_title']
-                bot.edit_message('-100' + str(p.chat_id), p.poll_id, text=resp_text + get_poll_text(p),
-                                 parse_mode='HTML')
+                bot.send_message(
+                    '-100' + str(p.chat_id),
+                    text=bot.config['messages']['stop_poll_scheduled'].format(title=p.title),
+                    parse_mode='HTML', reply_to_message_id=p.poll_id
+                )
+                resp_text = bot.config['messages']['stop_poll_title']
+                bot.edit_message(
+                    '-100' + str(p.chat_id),
+                    p.poll_id, text=resp_text + get_poll_text(p),
+                    parse_mode='HTML'
+                )
             else:
                 i += 1
 
 
-def stop_poll_scheduled_main():
-    while True:
+def stop_poll_scheduled_main(event: Event):
+    while not event.is_set():
         stop_poll_scheduled()
         time.sleep(60)

@@ -1,8 +1,11 @@
-import json
-
 import catbot
-from components import bot, config
-from components import trusted
+from components import bot
+from components.decorators import trusted
+
+__all__ = [
+    'set_trusted',
+    'list_trusted'
+]
 
 
 @trusted
@@ -10,8 +13,12 @@ def set_trusted_cri(msg: catbot.Message) -> bool:
     return bot.detect_command('/set_trusted', msg)
 
 
+@bot.msg_task(set_trusted_cri)
 def set_trusted(msg: catbot.Message):
-    trusted_list, rec = bot.secure_record_fetch('trusted', list)
+    if 'trusted' in bot.record:
+        trusted_list: list = bot.record['trusted']
+    else:
+        trusted_list = []
 
     new_trusted_id = []
     if msg.reply:
@@ -19,7 +26,7 @@ def set_trusted(msg: catbot.Message):
     else:
         user_input_token = msg.text.split()
         if len(user_input_token) == 1:
-            bot.send_message(msg.chat.id, text=config['messages']['set_trusted_prompt'], reply_to_message_id=msg.id)
+            bot.send_message(msg.chat.id, text=bot.config['messages']['set_trusted_prompt'], reply_to_message_id=msg.id)
             return
         else:
             for item in user_input_token[1:]:
@@ -33,14 +40,13 @@ def set_trusted(msg: catbot.Message):
     trusted_set.update(new_trusted_id)
     delta = trusted_set - old_trusted_set
     if len(delta) == 0:
-        bot.send_message(msg.chat.id, text=config['messages']['set_trusted_failed'], reply_to_message_id=msg.id)
+        bot.send_message(msg.chat.id, text=bot.config['messages']['set_trusted_failed'], reply_to_message_id=msg.id)
     else:
-        reply_text = config['messages']['set_trusted_succ']
+        reply_text = bot.config['messages']['set_trusted_succ']
         for item in delta:
             reply_text += str(item) + '\n'
 
-        rec['trusted'] = list(trusted_set)
-        json.dump(rec, open(config['record'], 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+        bot.record['trusted'] = list(trusted_set)
         bot.send_message(msg.chat.id, text=reply_text, reply_to_message_id=msg.id)
 
 
@@ -49,8 +55,12 @@ def list_trusted_cri(msg: catbot.Message) -> bool:
     return bot.detect_command('/list_trusted', msg) and msg.chat.type != 'private'
 
 
+@bot.msg_task(list_trusted_cri)
 def list_trusted(msg: catbot.Message):
-    trusted_list, rec = bot.secure_record_fetch('trusted', list)
+    if 'trusted' in bot.record:
+        trusted_list: list = bot.record['trusted']
+    else:
+        trusted_list = []
 
     resp_list = []
     bot.api('sendChatAction', {'chat_id': msg.chat.id, 'action': 'typing'})
@@ -64,11 +74,11 @@ def list_trusted(msg: catbot.Message):
         else:
             resp_list.append(trusted_user)
 
-    resp_text: str = config['messages']['list_trusted_succ']
+    resp_text: str = bot.config['messages']['list_trusted_succ']
     for user in resp_list:
         resp_text += f'{user.name}、'
     resp_text = resp_text.rstrip('、')
     if len(resp_list) == 0:
-        resp_text = config['messages']['list_trusted_empty']
+        resp_text = bot.config['messages']['list_trusted_empty']
 
     bot.send_message(msg.chat.id, text=resp_text, reply_to_message_id=msg.id)

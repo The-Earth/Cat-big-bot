@@ -1,12 +1,22 @@
 import catbot
 
-from components import bot, config
+from components import bot
+
+__all__ = [
+    'get_user_id',
+    'get_chat_id',
+    'start',
+    'bot_help',
+    'get_permalink',
+    'raw_api'
+]
 
 
 def get_user_id_cri(msg: catbot.Message) -> bool:
     return bot.detect_command('/user_id', msg)
 
 
+@bot.msg_task(get_user_id_cri)
 def get_user_id(msg: catbot.Message):
     if msg.reply:
         res_id = msg.reply_to_message.from_.id
@@ -19,6 +29,7 @@ def get_chat_id_cri(msg: catbot.Message) -> bool:
     return bot.detect_command('/chat_id', msg)
 
 
+@bot.msg_task(get_chat_id_cri)
 def get_chat_id(msg: catbot.Message):
     bot.send_message(chat_id=msg.chat.id, text=str(msg.chat.id), reply_to_message_id=msg.id)
 
@@ -27,8 +38,9 @@ def start_cri(msg: catbot.Message) -> bool:
     return bot.detect_command('/start', msg) and msg.chat.type == 'private'
 
 
+@bot.msg_task(start_cri)
 def start(msg: catbot.Message):
-    bot.send_message(chat_id=msg.chat.id, text=config['messages']['start'])
+    bot.send_message(chat_id=msg.chat.id, text=bot.config['messages']['start'])
 
 
 def bot_help_cri(msg: catbot.Message) -> bool:
@@ -38,19 +50,21 @@ def bot_help_cri(msg: catbot.Message) -> bool:
         return bot.detect_command('/help', msg)
 
 
+@bot.msg_task(bot_help_cri)
 def bot_help(msg: catbot.Message):
-    bot.send_message(msg.chat.id, text=config['messages']['help'], reply_to_message_id=msg.id)
+    bot.send_message(msg.chat.id, text=bot.config['messages']['help'], reply_to_message_id=msg.id)
 
 
 def get_permalink_cri(msg: catbot.Message) -> bool:
     return bot.detect_command('/permalink', msg) and msg.chat.type == 'private'
 
 
+@bot.msg_task(get_permalink_cri)
 def get_permalink(msg: catbot.Message):
     id_list = []
     user_input_token = msg.text.split()
     if len(user_input_token) == 1:
-        bot.send_message(msg.chat.id, text=config['messages']['permalink_prompt'], reply_to_message_id=msg.id)
+        bot.send_message(msg.chat.id, text=bot.config['messages']['permalink_prompt'], reply_to_message_id=msg.id)
         return
     else:
         for item in user_input_token[1:]:
@@ -66,9 +80,10 @@ def get_permalink(msg: catbot.Message):
 
 
 def raw_api_cri(msg: catbot.Message) -> bool:
-    return bot.detect_command('/api', msg) and msg.from_.id == config['operator_id']
+    return bot.detect_command('/api', msg) and msg.from_.id == bot.config['operator_id']
 
 
+@bot.msg_task(raw_api_cri)
 def raw_api(msg: catbot.Message):
     msg_lines = msg.text.split('\n')
     if msg_lines[0].startswith(f'/api@{bot.username}'):
