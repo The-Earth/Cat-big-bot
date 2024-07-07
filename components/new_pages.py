@@ -9,7 +9,8 @@ __all__ = [
     'start_new_pages',
     'stop_new_pages',
     'list_ns',
-    'set_ns'
+    'set_ns',
+    'new_pages_main'
 ]
 
 

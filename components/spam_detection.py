@@ -11,7 +11,8 @@ from telethon.events.newmessage import NewMessage
 from components import bot
 
 __all__ = [
-    'porn_detect_tester'
+    'porn_detect_tester',
+    'porn_detect_main'
 ]
 
 
@@ -171,8 +172,10 @@ def porn_detect_main():
         if pred > 0.8:  # TODO
             link = f't.me/c/{str(chat_id).replace("-100", "")}/{msg_id}'
             prob_text = f'{pred * 100:.0f}%'
-            bot.send_message(bot.config['porn_alert_chat'],
-                             text=bot.config['messages']['porn_detected_alert'].format(link=link, prob=prob_text))  # TODO
+            bot.send_message(
+                bot.config['porn_alert_chat'],
+                text=bot.config['messages']['porn_detected_alert'].format(link=link, prob=prob_text)
+            )
 
     client.start()
     client.run_until_disconnected()

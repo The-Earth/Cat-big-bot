@@ -15,7 +15,8 @@ __all__ = [
     'init_poll',
     'start_poll',
     'stop_poll',
-    'abort_poll'
+    'abort_poll',
+    'stop_poll_scheduled_main'
 ]
 
 
@@ -497,7 +498,7 @@ def stop_poll(query: catbot.CallbackQuery):
         for i in range(len(poll_list)):
             p = Poll.from_json(poll_list[i])
 
-            if p.cbot.hat_id == callback_chat_id and p.init_id == callback_init_id and p.open:
+            if p.chat_id == callback_chat_id and p.init_id == callback_init_id and p.open:
                 p.stop()
                 poll_list.pop(i)
                 bot.record['poll'] = poll_list
