@@ -11,6 +11,9 @@
   "ac_record": "ac.json",
   "porn_detection_model": "model.pt",
   "porn_alert_chat": -1001234567890,
+  "porn_exempt_chat": [
+    -1001234567890
+  ],
   "messages": {
     "pass_on_new_msg_to_op": "收到新消息，来自<a href=\"tg://user?id={from_id}\">{from_name}</a> (ID: {from_id}, {from_username}) \n Reply with /reply_{from_id}",
     "pass_on_sending_failed": "发送失败。",

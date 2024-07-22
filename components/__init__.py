@@ -3,7 +3,7 @@ import threading
 
 import catbot
 
-bot = catbot.Bot(config_path='test_config.json')
+bot = catbot.Bot(config_path='config.json')
 t_lock = threading.Lock()
 p_lock = multiprocessing.Lock()
 

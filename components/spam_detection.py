@@ -152,9 +152,11 @@ def porn_detect_main():
     @client.on(events.NewMessage())
     async def porn_detect(event: NewMessage):
         chat_id = event.chat_id
+        if chat_id in bot.config['porn_exempt_chat']:
+            return
         sender = event.from_id
         if hasattr(sender, 'user_id'):
-            user_id = sender.user_id
+            _ = sender.user_id
         else:
             return
         if event.photo is None:
