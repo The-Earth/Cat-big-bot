@@ -119,7 +119,7 @@ def pred_score(image: Image) -> float:
     image_tensor = image_tensor[:, h_start: h_start + 256, w_start: w_start + 256][None, :]
 
     net = Net()
-    net.load_state_dict(torch.load(bot.config['porn_detection_model'], map_location='cpu'))
+    net.load_state_dict(torch.load(bot.config['porn_detection_model'], map_location='cpu', weights_only=True))
     with torch.no_grad():
         pred = net(image_tensor)
     return pred.item()
