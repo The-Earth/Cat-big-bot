@@ -4,7 +4,6 @@ from threading import Thread
 from components import bot
 from components.new_pages import new_pages_main
 from components.poll import stop_poll_scheduled_main
-from components.spam_detection import porn_detect_main
 
 
 def bot_run(stop_event: Event):
@@ -21,8 +20,6 @@ if __name__ == '__main__':
     bot_p.start()
     new_pages_p = Thread(target=new_pages_main, args=(event,))
     new_pages_p.start()
-    porn_detect_p = Thread(target=porn_detect_main, daemon=True)
-    porn_detect_p.start()
 
     import time
     while True:

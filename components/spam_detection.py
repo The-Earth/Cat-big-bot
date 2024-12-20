@@ -5,14 +5,11 @@ import torch
 import torch.nn as nn
 from torchvision import transforms
 from PIL import Image
-from telethon import TelegramClient, events
-from telethon.events.newmessage import NewMessage
 
 from components import bot
 
 __all__ = [
     'porn_detect_tester',
-    'porn_detect_main'
 ]
 
 
@@ -146,38 +143,25 @@ def porn_detect_tester(msg: catbot.Message):
                      reply_to_message_id=msg.id)
 
 
-def porn_detect_main():
-    client = TelegramClient('spam_detection', bot.config['api_id'], bot.config['api_hash'])
+def porn_detect_cri(msg: catbot.Message):
+    return msg.chat.id not in bot.config['porn_exempt_chat'] and msg.has_photo
 
-    @client.on(events.NewMessage())
-    async def porn_detect(event: NewMessage):
-        chat_id = event.chat_id
-        if chat_id in bot.config['porn_exempt_chat']:
-            return
-        sender = event.from_id
-        if hasattr(sender, 'user_id'):
-            _ = sender.user_id
-        else:
-            return
-        if event.photo is None:
-            return
-        # if int(chat_id) == bot.id or int(user_id) < 5400000000:   # TODO
-        #     return
-        msg_id = event.id
 
-        photo_buff = await event.download_media(file=bytes, thumb=-1)
-        image = Image.open(BytesIO(photo_buff))
-        if image.size[0] < 256 or image.size[1] < 256:
-            return
-        bot.api('sendChatAction', {'chat_id': bot.config['porn_alert_chat'], 'action': 'typing'})
-        pred = pred_score(image)
-        if pred > 0.8:  # TODO
-            link = f't.me/c/{str(chat_id).replace("-100", "")}/{msg_id}'
-            prob_text = f'{pred * 100:.0f}%'
-            bot.send_message(
-                bot.config['porn_alert_chat'],
-                text=bot.config['messages']['porn_detected_alert'].format(link=link, prob=prob_text)
-            )
-
-    client.start()
-    client.run_until_disconnected()
+@bot.msg_task(porn_detect_cri)
+def porn_detect(msg: catbot.Message):
+    # if int(chat_id) == bot.id or int(user_id) < 5400000000:   # TODO
+    #     return
+    photo = msg.photo[-1]
+    file = bot.get_file(photo.file_id)
+    image = Image.open(BytesIO(bot.download(file)))
+    if image.size[0] < 256 or image.size[1] < 256:
+        return
+    bot.api('sendChatAction', {'chat_id': bot.config['porn_alert_chat'], 'action': 'typing'})
+    pred = pred_score(image)
+    if pred > 0.8:  # TODO
+        link = f't.me/c/{str(msg.chat.id).replace("-100", "")}/{msg.id}'
+        prob_text = f'{pred * 100:.0f}%'
+        bot.send_message(
+            bot.config['porn_alert_chat'],
+            text=bot.config['messages']['porn_detected_alert'].format(link=link, prob=prob_text)
+        )
