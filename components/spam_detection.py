@@ -147,7 +147,7 @@ def porn_detect_cri(msg: catbot.Message):
     return msg.chat.id not in bot.config['porn_exempt_chat'] and msg.has_photo
 
 
-@bot.msg_task(porn_detect_cri)
+# @bot.msg_task(porn_detect_cri)
 def porn_detect(msg: catbot.Message):
     # if int(chat_id) == bot.id or int(user_id) < 5400000000:   # TODO
     #     return
