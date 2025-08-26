@@ -116,7 +116,7 @@ def new_pages(stop_event):
             for event in source:
                 if stop_event.is_set():
                     break
-                if event.event != 'message':
+                if event.type != 'message':
                     continue
                 try:
                     change: dict = json.loads(event.data)
