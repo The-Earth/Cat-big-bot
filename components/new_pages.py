@@ -1,9 +1,10 @@
 import json
 
 import catbot
+import requests
 from catbot.util import html_escape
 from components import bot
-from sseclient import SSEClient
+from requests_sse import EventSource, InvalidStatusCodeError, InvalidContentTypeError
 
 __all__ = [
     'start_new_pages',
@@ -109,35 +110,46 @@ def set_ns(msg: catbot.Message):
 def new_pages(stop_event):
     event_url = 'https://stream.wikimedia.org/v2/stream/page-create'
     sse_kw = {'proxies': {'https': bot.config['proxy']['proxy_url']}} if bot.config['proxy']['enable'] else {}
-    for event in SSEClient(event_url, **sse_kw):
-        if stop_event.is_set():
-            break
-        if event.event != 'message':
-            continue
+    sse_kw.update({'headers': {'User-Agent': bot.config['user_agent']}})
+    with EventSource(event_url, **sse_kw) as source:
         try:
-            change: dict = json.loads(event.data)
-        except ValueError:
-            continue
-        else:
-            if change['meta']['domain'] != 'zh.wikipedia.org':
-                continue
-            title: str = change['page_title']
-            user: str = change['performer']['user_text']
-
-            if 'new_pages' in bot.record:
-                new_pages_rec = bot.record['new_pages']
-            else:
-                new_pages_rec = {}
-
-            for chat_id in new_pages_rec.keys():
-                if not new_pages_rec[chat_id]['enable']:
+            for event in source:
+                if stop_event.is_set():
+                    break
+                if event.event != 'message':
                     continue
-                if -1 in new_pages_rec[chat_id]['ns']:
-                    sending_trials(int(chat_id), title, user)
-                elif change['page_namespace'] in new_pages_rec[chat_id]['ns']:
-                    sending_trials(int(chat_id), title, user)
+                try:
+                    change: dict = json.loads(event.data)
+                except ValueError:
+                    continue
+                else:
+                    if change['meta']['domain'] != 'zh.wikipedia.org':
+                        continue
+                    title: str = change['page_title']
+                    user: str = change['performer']['user_text']
 
-            print(title)
+                    if 'new_pages' in bot.record:
+                        new_pages_rec = bot.record['new_pages']
+                    else:
+                        new_pages_rec = {}
+
+                    for chat_id in new_pages_rec.keys():
+                        if not new_pages_rec[chat_id]['enable']:
+                            continue
+                        if -1 in new_pages_rec[chat_id]['ns']:
+                            sending_trials(int(chat_id), title, user)
+                        elif change['page_namespace'] in new_pages_rec[chat_id]['ns']:
+                            sending_trials(int(chat_id), title, user)
+
+                    print(title)
+        except InvalidStatusCodeError:
+            pass
+        except InvalidContentTypeError:
+            pass
+        except requests.RequestException:
+            pass
+        except StopIteration:
+            pass
 
 
 def sending_trials(chat_id: int, title: str, user: str):

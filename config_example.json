@@ -6,6 +6,7 @@
     "enable": true,
     "proxy_url": "http://127.0.0.1:9999"
   },
+  "user_agent": "",
   "operator_id": 987654321,
   "record": "record.json",
   "ac_record": "ac.json",

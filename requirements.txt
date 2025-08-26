@@ -1,6 +1,6 @@
 requests
 dateparser
-sseclient
+requests-sse
 git+https://github.com/The-Earth/catbot.git#egg=catbot
 torch
 torchvision
