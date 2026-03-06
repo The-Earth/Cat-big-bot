@@ -99,7 +99,7 @@ def raw_api(msg: catbot.Message):
             try:
                 value = eval(value)
             except NameError as e:
-                bot.send_message(msg.chat.id, text=config['messages']['api_data_error'].format(
+                bot.send_message(msg.chat.id, text=bot.config['messages']['api_data_error'].format(
                     key=e.args[0].removeprefix("name '").removesuffix("' is not defined")
                 ), reply_to_message_id=msg.id)
                 return

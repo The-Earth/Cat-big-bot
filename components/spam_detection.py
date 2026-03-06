@@ -4,7 +4,7 @@ import catbot
 # import torch
 # import torch.nn as nn
 # from torchvision import transforms
-from PIL import Image
+# from PIL import Image
 
 from components import bot
 
